@@ -105,7 +105,7 @@ function LoginPage() {
             </Button>
             <p className="text-center text-sm">
               Chưa có tài khoản?{" "}
-              <Link className="hover:underline hover:text-blue-400" to={"/login"}>
+              <Link className="hover:underline hover:text-blue-400" to={"/register"}>
                 Đăng kí
               </Link>
             </p>
