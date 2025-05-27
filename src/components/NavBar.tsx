@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 function NavBar() {
   return (
-    <nav className="bg-white w-full shadow-lg fixed z-50 px-4">
+    <nav className="bg-white w-full shadow-lg px-4">
       <div className="flex justify-between items-center h-16">
         <div className="flex items-center">
           <svg
@@ -20,12 +20,13 @@ function NavBar() {
         </div>
         <div className="hidden md:flex space-x-8">
           {[
-            {name: "Trang chủ", link: "/"},
-            {name: "Hiến máu", link: "/donate-blood"},
-            {name: "Nhóm máu", link: "/blood-types"},
-            {name: "Khẩn cấp", link: "/emergency"},
+            { name: "Trang chủ", link: "/" },
+            { name: "Hiến máu", link: "/donate-blood" },
+            { name: "Nhóm máu", link: "/blood-types" },
+            { name: "Khẩn cấp", link: "/emergency" },
           ].map((item) => (
-            <Link to={item.link}
+            <Link
+              to={item.link}
               key={item.name}
               className="text-gray-600 hover:text-red-600 transition-colors"
             >
