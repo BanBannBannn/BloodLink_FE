@@ -9,11 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 const loginSchema = z.object({
-  identification: z
-    .string()
-    .min(12, "Căn cước công dân có 12 chữ số")
-    .max(12, "Căn cước công dân có 12 chữ số")
-    .regex(/^\d+$/, "Căn cước công dân chỉ được chứa số"),
+  email: z
+    .string().nonempty("Vui lòng nhập email").email("Email không hợp lệ"),
   password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
 });
 
@@ -33,22 +30,22 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="h-full flex items-center justify-center bg-gray-100">
       <Card className="w-full max-w-sm p-6 shadow-xl">
         <CardContent>
           <h1 className="text-2xl font-semibold mb-6 text-center">Đăng nhập</h1>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <Label htmlFor="identification">Căn cước công dân</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="identification"
-                {...register("identification")}
-                placeholder="05621xxxxxxxx"
+                id="email"
+                {...register("email")}
+                placeholder="example@gmail.com"
                 className="mt-2"
               />
-              {errors.identification && (
+              {errors.email && (
                 <p className="text-sm text-red-500 mt-1">
-                  {errors.identification.message}
+                  {errors.email.message}
                 </p>
               )}
             </div>
@@ -105,7 +102,7 @@ function LoginPage() {
             </Button>
             <p className="text-center text-sm">
               Chưa có tài khoản?{" "}
-              <Link className="hover:underline hover:text-blue-400" to={"/register"}>
+              <Link to={"/register"} className="font-semibold text-red-600 hover:text-red-700 transition-colors">
                 Đăng kí
               </Link>
             </p>
