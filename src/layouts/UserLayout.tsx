@@ -5,7 +5,7 @@ function UserLayout() {
   return (
     <div className="flex flex-col h-screen">
       <NavBar />
-      <div className="grow overflow-auto">
+      <div className="grow">
         <Outlet />
       </div>
     </div>
