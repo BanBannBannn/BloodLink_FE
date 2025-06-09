@@ -8,6 +8,12 @@ import {
   Clock,
   CheckCircle2,
   Droplet,
+  Scale,
+  BadgeAlert,
+  Wine,
+  XCircle,
+  CalendarRange,
+  TestTubes,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -153,6 +159,93 @@ function HomePage() {
                     Bước {index + 1}
                   </div>
                   <p className="text-gray-600">{item.step}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Blood Donation Criteria Section */}
+      <section className="py-20 px-6 md:px-20 bg-white">
+        <motion.div
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800">
+            Tiêu chuẩn
+            <span className="text-red-600 ml-2">tham gia hiến máu</span>
+          </h2>
+        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {[
+            {
+              icon: BadgeAlert,
+              title: "Mang theo chứng minh nhân dân/hộ chiếu",
+              description: "Cần có giấy tờ tùy thân hợp lệ khi đến hiến máu",
+            },
+            {
+              icon: Wine,
+              title: "Không nghiện ma túy, rượu bia và các chất kích thích",
+              description: "Đảm bảo sức khỏe và chất lượng máu hiến tặng",
+            },
+            {
+              icon: XCircle,
+              title: "Không mắc các bệnh truyền nhiễm",
+              description: "Không nhiễm HIV, viêm gan B, C và các virus lây qua đường truyền máu",
+            },
+            {
+              icon: Scale,
+              title: "Cân nặng phù hợp",
+              description: "Nam ≥ 45 kg, Nữ ≥ 45 kg",
+            },
+            {
+              icon: Activity,
+              title: "Sức khỏe tốt",
+              description: "Không mắc các bệnh mãn tính hoặc cấp tính về tim mạch, huyết áp, hô hấp, da",
+            },
+            {
+              icon: TestTubes,
+              title: "Chỉ số máu đạt yêu cầu",
+              description: "Chỉ số huyết sắc tố (Hb) ≥120g/l (≥125g/l nếu hiến từ 350ml trở lên)",
+            },
+            {
+              icon: Users,
+              title: "Độ tuổi phù hợp",
+              description: "Người khỏe mạnh trong độ tuổi từ đủ 18 đến 60 tuổi",
+            },
+            {
+              icon: CalendarRange,
+              title: "Thời gian giữa các lần hiến máu",
+              description: "Thời gian tối thiểu giữa 2 lần hiến máu là 12 tuần đối với cả Nam và Nữ",
+            },
+            {
+              icon: CheckCircle2,
+              title: "Kết quả test nhanh",
+              description: "Kết quả test nhanh âm tính với kháng nguyên bề mặt của siêu vi B",
+            },
+          ].map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+            >
+              <Card className="h-full hover:shadow-xl transition-shadow duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800 mb-2">{item.title}</h3>
+                      <p className="text-gray-600 text-sm">{item.description}</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
