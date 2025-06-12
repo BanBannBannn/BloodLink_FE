@@ -1,0 +1,144 @@
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import axiosInstance from "@/lib/axios";
+
+interface Props {
+    request: any;
+    onClose: () => void;
+}
+
+export default function HealthCheckFormModal({ request, onClose }: Props) {
+    const existing = request.healthCheckForm;
+    const isViewMode = request.status !== 0 || !!existing;
+
+    const [age, setAge] = useState(existing?.age || 0);
+    const [weight, setWeight] = useState(existing?.weight || 0);
+    const [volume, setVolume] = useState(existing?.volumeBloodDonated || 0);
+    const [hemoglobin, setHemoglobin] = useState(existing?.hemoglobin || 0);
+
+    const [isInfectiousDisease, setIsInfectiousDisease] = useState(
+        existing?.isInfectiousDisease || false
+    );
+    const [isPregnant, setIsPregnant] = useState(existing?.isPregnant || false);
+    const [isUsedAlcoholRecently, setIsUsedAlcoholRecently] = useState(
+        existing?.isUsedAlcoholRecently || false
+    );
+    const [hasChronicDisease, setHasChronicDisease] = useState(
+        existing?.hasChronicDisease || false
+    );
+    const [hasUnsafeSexualBehaviourOrSameSexSexualContact] = useState(
+        existing?.hasUnsafeSexualBehaviourOrSameSexSexualContact || false
+    );
+    const [note, setNote] = useState(existing?.note || "");
+
+    const handleSubmit = async () => {
+        if (isViewMode) return;
+
+        try {
+            await axiosInstance.post("/api/health-check-form", {
+                age,
+                weight,
+                volumeBloodDonated: volume,
+                hemoglobin,
+                isInfectiousDisease,
+                isPregnant,
+                isUsedAlcoholRecently,
+                hasChronicDisease,
+                hasUnsafeSexualBehaviourOrSameSexSexualContact,
+                note: note || "Không có ghi chú",
+                bloodDonateRequestId: request.id,
+            });
+
+            await axiosInstance.put(
+                `/api/blood-donation-requests/status/${request.id}?status=1`
+            );
+            alert("Đã duyệt!");
+            onClose();
+        } catch (err: any) {
+            console.error("Lỗi:", err.response?.data || err.message);
+            alert("Có lỗi xảy ra!");
+        }
+    };
+
+    const disabled = isViewMode;
+
+    return (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-4 w-96 max-h-[90vh] overflow-y-auto">
+                <h2 className="text-lg font-semibold mb-2">Health Check Form</h2>
+
+                {[
+                    { label: "Tuổi", value: age, set: setAge },
+                    { label: "Cân nặng (kg)", value: weight, set: setWeight },
+                    { label: "Thể tích máu", value: volume, set: setVolume },
+                    { label: "Hemoglobin", value: hemoglobin, set: setHemoglobin },
+                ].map(({ label, value, set }) => (
+                    <div className="mb-2" key={label}>
+                        <label>{label}:</label>
+                        <input
+                            type="number"
+                            value={value}
+                            disabled={disabled}
+                            onChange={(e) => set(parseInt(e.target.value))}
+                            className="border rounded w-full px-2 py-1 mt-1"
+                        />
+                    </div>
+                ))}
+
+                {[
+                    {
+                        label: "Có bệnh truyền nhiễm",
+                        value: isInfectiousDisease,
+                        set: setIsInfectiousDisease,
+                    },
+                    {
+                        label: "Mang thai",
+                        value: isPregnant,
+                        set: setIsPregnant,
+                    },
+                    {
+                        label: "Dùng rượu gần đây",
+                        value: isUsedAlcoholRecently,
+                        set: setIsUsedAlcoholRecently,
+                    },
+                    {
+                        label: "Bệnh mãn tính",
+                        value: hasChronicDisease,
+                        set: setHasChronicDisease,
+                    },
+                ].map(({ label, value, set }) => (
+                    <div className="mb-2" key={label}>
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={value}
+                                onChange={(e) => set(e.target.checked)}
+                                disabled={disabled}
+                            />
+                            {label}
+                        </label>
+                    </div>
+                ))}
+
+                <div className="mb-2">
+                    <label>Ghi chú:</label>
+                    <textarea
+                        value={note}
+                        disabled={disabled}
+                        onChange={(e) => setNote(e.target.value)}
+                        className="border rounded w-full px-2 py-1 mt-1"
+                        rows={2}
+                    />
+                </div>
+
+                <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={onClose}>
+                        Đóng
+                    </Button>
+                    {!disabled && <Button onClick={handleSubmit}>Xác nhận</Button>}
+                </div>
+            </div>
+        </div>
+    );
+}
+

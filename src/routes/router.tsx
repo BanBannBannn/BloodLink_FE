@@ -14,8 +14,8 @@ import BloodComponentsTable from "@/pages/public/bloodStorage/BloodComponentsTab
 import BloodHistoryTable from "@/pages/public/bloodStorage/BloodHistoryTable";
 import BloodRequestTable from "@/pages/public/bloodStorage/BloodRequestTable";
 
-import BloodDonateRequestStatusTable from "@/pages/public/nurse/BloodDonateRequestStatusTable";
 import BloodDonationScheduleTable from "@/pages/public/nurse/BloodDonationScheduleTable";
+import BloodDonationRequestsTable from "@/pages/public/nurse/BloodDonationRequestsTable";
 import NurseDashboard from "@/pages/public/nurse/Dashboard";
 import NurseLayout from "@/layouts/NurseLayout";
 
@@ -66,8 +66,8 @@ export const router = createBrowserRouter([
     element: <NurseLayout />,
     children: [
       { path: "nurse-dashboard", element: <NurseDashboard /> },
-      { path: "blood-status", element: <BloodDonateRequestStatusTable/> },
-      { path: "blood-requests-table", element: <BloodDonationScheduleTable /> },
+      { path: "blood-donation-table", element: <BloodDonationScheduleTable/> },
+      { path: "blood-requests-table", element: <BloodDonationRequestsTable /> }
     ],
     
   }
