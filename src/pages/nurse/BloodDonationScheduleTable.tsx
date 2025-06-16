@@ -45,9 +45,9 @@ export default function BloodDonationTable() {
                   }`}
                 >
                   {item.status === 0
-                    ? "Đang chờ"
+                    ? "Đang hiến máu"
                     : item.status === 1
-                    ? "Đã duyệt"
+                    ? "Đã hiến máu"
                     : "Từ chối"}
                 </td>
                 <td className="p-2">{item.reasonReject || "-"}</td>

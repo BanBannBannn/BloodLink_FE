@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import axiosInstance from "@/lib/axios";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface Props {
     request: any;
@@ -31,9 +32,12 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
     );
     const [note, setNote] = useState(existing?.note || "");
 
-    const handleSubmit = async () => {
-        if (isViewMode) return;
+    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+    const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
+    const handleSubmit = async () => {
+        setFieldErrors({});
+        setAlertMessage(null);
         try {
             await axiosInstance.post("/api/health-check-form", {
                 age,
@@ -49,14 +53,19 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
                 bloodDonateRequestId: request.id,
             });
 
-            await axiosInstance.put(
-                `/api/blood-donation-requests/status/${request.id}?status=1`
-            );
-            alert("Đã duyệt!");
+            alert("Điền form thành công!");
             onClose();
         } catch (err: any) {
-            console.error("Lỗi:", err.response?.data || err.message);
-            alert("Có lỗi xảy ra!");
+            const errors = err.response?.data?.errors;
+            if (errors) {
+                const mapped: { [key: string]: string } = {};
+                for (const key in errors) {
+                    mapped[key] = errors[key][0];
+                }
+                setFieldErrors(mapped);
+            } else {
+                setAlertMessage(err.response?.data?.title || "Có lỗi xảy ra!");
+            }
         }
     };
 
@@ -67,12 +76,17 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
             <div className="bg-white rounded-lg p-4 w-96 max-h-[90vh] overflow-y-auto">
                 <h2 className="text-lg font-semibold mb-2">Health Check Form</h2>
 
-                {[
-                    { label: "Tuổi", value: age, set: setAge },
-                    { label: "Cân nặng (kg)", value: weight, set: setWeight },
-                    { label: "Thể tích máu", value: volume, set: setVolume },
-                    { label: "Hemoglobin", value: hemoglobin, set: setHemoglobin },
-                ].map(({ label, value, set }) => (
+                {alertMessage && (
+                    <Alert variant="destructive" className="mb-2">
+                        <AlertTitle>Lỗi</AlertTitle>
+                        <AlertDescription>{alertMessage}</AlertDescription>
+                    </Alert>
+                )}
+
+                {[{ label: "Tuổi", value: age, set: setAge, key: "age" },
+                { label: "Cân nặng (kg)", value: weight, set: setWeight, key: "weight" },
+                { label: "Thể tích máu", value: volume, set: setVolume, key: "volumeBloodDonated" },
+                { label: "Hemoglobin", value: hemoglobin, set: setHemoglobin, key: "hemoglobin" }].map(({ label, value, set, key }) => (
                     <div className="mb-2" key={label}>
                         <label>{label}:</label>
                         <input
@@ -82,31 +96,16 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
                             onChange={(e) => set(parseInt(e.target.value))}
                             className="border rounded w-full px-2 py-1 mt-1"
                         />
+                        {fieldErrors[key] && (
+                            <p className="text-red-500 text-sm mt-1">{fieldErrors[key]}</p>
+                        )}
                     </div>
                 ))}
 
-                {[
-                    {
-                        label: "Có bệnh truyền nhiễm",
-                        value: isInfectiousDisease,
-                        set: setIsInfectiousDisease,
-                    },
-                    {
-                        label: "Mang thai",
-                        value: isPregnant,
-                        set: setIsPregnant,
-                    },
-                    {
-                        label: "Dùng rượu gần đây",
-                        value: isUsedAlcoholRecently,
-                        set: setIsUsedAlcoholRecently,
-                    },
-                    {
-                        label: "Bệnh mãn tính",
-                        value: hasChronicDisease,
-                        set: setHasChronicDisease,
-                    },
-                ].map(({ label, value, set }) => (
+                {[{ label: "Có bệnh truyền nhiễm", value: isInfectiousDisease, set: setIsInfectiousDisease },
+                { label: "Mang thai", value: isPregnant, set: setIsPregnant },
+                { label: "Dùng rượu gần đây", value: isUsedAlcoholRecently, set: setIsUsedAlcoholRecently },
+                { label: "Bệnh mãn tính", value: hasChronicDisease, set: setHasChronicDisease }].map(({ label, value, set }) => (
                     <div className="mb-2" key={label}>
                         <label className="flex items-center gap-2">
                             <input
@@ -141,4 +140,3 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
         </div>
     );
 }
-

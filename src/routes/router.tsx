@@ -4,19 +4,19 @@ import AdminLayout from "@/layouts/AdminLayout";
 import LoginPage from "@/pages/public/Login";
 import RegisterPage from "@/pages/public/Register";
 
-import AdminDashboard from "@/pages/public/admin/Dashboard";
-import AccountManagement from "@/pages/public/admin/AccountManagement";
+import AdminDashboard from "@/pages/admin/Dashboard";
+import AccountManagement from "@/pages/admin/AccountManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
-import SupervisorDashboard from "@/pages/public/bloodStorage/Dashboard";
-import BloodRawTable from "@/pages/public/bloodStorage/BloodRawTable";
-import BloodComponentsTable from "@/pages/public/bloodStorage/BloodComponentsTable";
-import BloodHistoryTable from "@/pages/public/bloodStorage/BloodHistoryTable";
-import BloodRequestTable from "@/pages/public/bloodStorage/BloodRequestTable";
+import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
+import BloodRawTable from "@/pages/bloodStorage/BloodRawTable";
+import BloodComponentsTable from "@/pages/bloodStorage/BloodComponentsTable";
+import BloodHistoryTable from "@/pages/bloodStorage/BloodHistoryTable";
+import BloodRequestTable from "@/pages/bloodStorage/BloodRequestTable";
 
-import BloodDonationScheduleTable from "@/pages/public/nurse/BloodDonationScheduleTable";
-import BloodDonationRequestsTable from "@/pages/public/nurse/BloodDonationRequestsTable";
-import NurseDashboard from "@/pages/public/nurse/Dashboard";
+import BloodDonationScheduleTable from "@/pages/nurse/BloodDonationScheduleTable";
+import BloodDonationRequestsTable from "@/pages/nurse/BloodDonationRequestsTable";
+import NurseDashboard from "@/pages/nurse/Dashboard";
 import NurseLayout from "@/layouts/NurseLayout";
 
 
