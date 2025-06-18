@@ -1,16 +1,18 @@
-import React from "react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { loginApi } from "@/api/authApi";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/AuthContext";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { z } from "zod";
 
 const loginSchema = z.object({
-  email: z
-    .string().nonempty("Vui lòng nhập email").email("Email không hợp lệ"),
+  email: z.string().nonempty("Vui lòng nhập email").email("Email không hợp lệ"),
   password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
 });
 
@@ -24,16 +26,32 @@ function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log("Đăng nhập với:", data);
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+    try {
+      const result = await loginApi(data);
+      login(result.user, result.token);
+      setIsLoading(false);
+      navigate("/");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setIsLoading(false);
+      setErrorMessage("Email hoặc mật khẩu không đúng");
+    }
   };
 
   return (
-    <div className="h-full flex items-center justify-center bg-gray-100">
-      <Card className="w-full max-w-sm p-6 shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <Card className="w-full max-w-md p-6 shadow-xl">
         <CardContent>
-          <h1 className="text-2xl font-semibold mb-6 text-center">Đăng nhập</h1>
+          <h1 className="mb-4 text-3xl text-center font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+            Đăng nhập
+          </h1>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <Label htmlFor="email">Email</Label>
@@ -64,17 +82,21 @@ function LoginPage() {
                 </p>
               )}
             </div>
+            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
             <Button
               type="submit"
               className="w-full bg-red-600 hover:bg-red-700 text-white"
+              disabled={isLoading}
             >
-              Đăng nhập
+              {isLoading ? "Đang gửi..." : "Đăng nhập"}
             </Button>
-            <div className="flex justify-between items-center gap-x-2">
-              <div className="w-full h-1 bg-gray-200"></div>
-              <span className="text-gray-400">Hoặc</span>
-              <div className="w-full h-1 bg-gray-200"></div>
+
+            <div className="w-full flex items-center justify-center gap-x-2">
+              <Separator className="flex-1" />
+              <span className="text-gray-500 whitespace-nowrap">Hoặc</span>
+              <Separator className="flex-1" />
             </div>
+
             <Button className="w-full bg-transparent border text-black hover:bg-gray-100">
               <svg
                 className="mr-2 h-5 w-5"
@@ -102,7 +124,10 @@ function LoginPage() {
             </Button>
             <p className="text-center text-sm">
               Chưa có tài khoản?{" "}
-              <Link to={"/register"} className="font-semibold text-red-600 hover:text-red-700 transition-colors">
+              <Link
+                to={"/register"}
+                className="font-semibold text-red-600 hover:text-red-700 transition-colors"
+              >
                 Đăng kí
               </Link>
             </p>

@@ -9,7 +9,7 @@ export function Stepper({
   activeStep: number;
 }) {
   return (
-    <div className="w-full flex flex-1 items-center justify-between mb-6">
+    <div className="w-full flex items-center justify-between mb-6">
       {steps.map((label, index) => {
         const isActive = index === activeStep;
         const isCompleted = index < activeStep;
