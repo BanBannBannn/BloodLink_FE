@@ -1,4 +1,4 @@
-import { BirthDatePicker } from "@/components/BirthDatePicker";
+import { bloodDonationRequest } from "@/api/userApi";
 import { Stepper } from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -11,7 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -22,15 +21,25 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, isToday } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "../../components/ui/dialog";
 
 const bloodTypes = ["A", "B", "AB", "O", "Chưa rõ"];
 const timeSlots = [
   "07:00 - 07:30",
   "07:30 - 08:00",
   "08:00 - 08:30",
+  "08:30 - 09:00",
   "09:00 - 09:30",
   "09:30 - 10:00",
   "10:00 - 10:30",
@@ -42,95 +51,102 @@ const timeSlots = [
 ];
 
 const Step1Schema = z.object({
-  date: z.date({ required_error: "Vui lòng chọn ngày" }),
-  timeSlot: z.string().nonempty("Vui lòng chọn khung giờ"),
-  bloodType: z.string().nonempty("Vui lòng chọn nhóm máu"),
+  donatedDateRequest: z.string().nonempty("Vui lòng chọn ngày"),
+  timeSlot: z.number().min(0, "Vui lòng chọn khung giờ"),
+  bloodType: z.number().min(0, "Vui lòng chọn nhóm máu"),
 });
 
 const Step2Schema = z.object({
-  transfusionHistory: z.string().nonempty("Vui lòng chọn câu trả lời"),
-  fluSymptoms: z.string().nonempty("Vui lòng chọn câu trả lời"),
-  bleedingIncidents: z.string().nonempty("Vui lòng chọn câu trả lời"),
-  drugInjection: z.string().nonempty("Vui lòng chọn câu trả lời"),
-  epidemicTravel: z.string().nonempty("Vui lòng chọn câu trả lời"),
-});
-
-const Step3Schema = z.object({
-  fullName: z
-    .string({ required_error: "Vui lòng nhập họ và tên" })
-    .nonempty("Vui lòng nhập họ và tên"),
-  dateOfBirth: z.date({ required_error: "Vui lòng chọn ngày sinh" }),
-  gender: z.string().nonempty("Vui lòng chọn giới tính"),
-  phoneNumber: z
-    .string({ required_error: "Vui lòng nhập số điện thoại" })
-    .regex(/^\d+$/, "Số điện thoại chỉ chứa số")
-    .length(10, "Số diện thoại gồm 10 số"),
-  address: z
-    .string({ required_error: "Vui lòng nhập địa chỉ" })
-    .nonempty("Vui lòng nhập địa chỉ"),
-  frontIdCardImage: z.instanceof(File),
-  backIdCardImage: z.instanceof(File),
+  hasBloodTransfusionHistory: z
+    .boolean()
+    .optional()
+    .refine((val) => typeof val === "boolean", {
+      message: "Vui lòng chọn câu trả lời",
+    }),
+  hasRecentIllnessOrMedication: z
+    .boolean()
+    .optional()
+    .refine((val) => typeof val === "boolean", {
+      message: "Vui lòng chọn câu trả lời",
+    }),
+  hasRecentSkinPenetrationOrSurgery: z
+    .boolean()
+    .optional()
+    .refine((val) => typeof val === "boolean", {
+      message: "Vui lòng chọn câu trả lời",
+    }),
+  hasDrugInjectionHistory: z
+    .boolean()
+    .optional()
+    .refine((val) => typeof val === "boolean", {
+      message: "Vui lòng chọn câu trả lời",
+    }),
+  hasVisitedEpidemicArea: z
+    .boolean()
+    .optional()
+    .refine((val) => typeof val === "boolean", {
+      message: "Vui lòng chọn câu trả lời",
+    }),
 });
 
 type Step1Data = z.infer<typeof Step1Schema>;
-type Step2Data = z.infer<typeof Step2Schema>;
-type Step3Data = z.infer<typeof Step3Schema>;
+type Step2Data = {
+  hasBloodTransfusionHistory?: boolean;
+  hasRecentIllnessOrMedication?: boolean;
+  hasRecentSkinPenetrationOrSurgery?: boolean;
+  hasDrugInjectionHistory?: boolean;
+  hasVisitedEpidemicArea?: boolean;
+};
 
 function BloodDonation() {
   const form1 = useForm<Step1Data>({
     resolver: zodResolver(Step1Schema),
     defaultValues: {
-      date: undefined,
-      timeSlot: "",
-      bloodType: "",
+      donatedDateRequest: "",
+      timeSlot: -1,
+      bloodType: -1,
     },
   });
 
   const form2 = useForm<Step2Data>({
     resolver: zodResolver(Step2Schema),
     defaultValues: {
-      transfusionHistory: "",
-      fluSymptoms: "",
-      bleedingIncidents: "",
-      drugInjection: "",
-      epidemicTravel: "",
+      hasBloodTransfusionHistory: undefined,
+      hasRecentIllnessOrMedication: undefined,
+      hasRecentSkinPenetrationOrSurgery: undefined,
+      hasDrugInjectionHistory: undefined,
+      hasVisitedEpidemicArea: undefined,
     },
   });
 
-  const form3 = useForm<Step3Data>({
-    resolver: zodResolver(Step3Schema),
-    defaultValues: {
-      fullName: "",
-      dateOfBirth: undefined,
-      phoneNumber: "",
-      address: "",
-      gender: "",
-    },
-  });
   const [activeStep, setActiveStep] = useState<number>(0);
-  const [frontIdCardImage, setFrontIdCardImage] = useState<string | null>(null);
-  const [backIdCardImage, setBackIdCardImage] = useState<string | null>(null);
-  const frontIdCardInputRef = useRef<HTMLInputElement>(null);
-  const backIdCardInputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const navigate = useNavigate();
 
-  const onSubmitStep1 = (data: Step1Data) => {
-    console.log("Step 1 data:", data);
-    setActiveStep(1);
+  const onSubmit = async (data: Step2Data) => {
+    setLoading(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    const dataToSubmit = { ...form1.getValues(), ...data, reasonReject: "" };
+    try {
+      await bloodDonationRequest(dataToSubmit);
+      setSuccessMsg("Đăng ký hiến máu thành công!");
+      setShowSuccessDialog(true);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorMsg(error.message);
+      } else {
+        setErrorMsg("Đã xảy ra lỗi, vui lòng thử lại.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const onSubmitStep2 = (data: Step2Data) => {
-    console.log("Step 2 data:", data);
-    setActiveStep(2);
-  };
-
-  const onSubmitStep3 = (data: Step3Data) => {
-    console.log("form 3");
-    console.log("Step 1 data:", form1.getValues());
-    console.log("Step 2 data:", form2.getValues());
-    console.log("Step 3 data:", data);
-  };
-
-  const selectedDate = form1.watch("date");
+  const selectedDate = form1.watch("donatedDateRequest");
 
   const isPassTimeSlot = (timeSlot: string, selectedDate: Date | undefined) => {
     if (!selectedDate) return true;
@@ -148,12 +164,15 @@ function BloodDonation() {
 
   return (
     <div className="w-full">
-      <div className="max-w-4xl mx-auto px-4 mt-8">
-        <div className="w-full flex justify-center items-center">
-          <Stepper
-            steps={["Thời gian", "Khai báo y tế", "Thông tin người hiến"]}
-            activeStep={activeStep}
-          />
+      <div className="max-w-4xl mx-auto px-4 mt-8 mb-8">
+        {/* Centered Stepper */}
+        <div className="flex justify-center my-12">
+          <div className="w-full max-w-xl">
+            <Stepper
+              steps={["Thời gian", "Khai báo y tế"]}
+              activeStep={activeStep}
+            />
+          </div>
         </div>
 
         <div className="mt-8">
@@ -167,13 +186,10 @@ function BloodDonation() {
               </CardHeader>
               <CardContent>
                 <Form {...form1}>
-                  <form
-                    onSubmit={form1.handleSubmit(onSubmitStep1)}
-                    className="space-y-6"
-                  >
+                  <form className="space-y-6">
                     <FormField
                       control={form1.control}
-                      name="date"
+                      name="donatedDateRequest"
                       render={({ field }) => (
                         <FormItem className="space-y-4">
                           <FormLabel className="text-lg font-semibold">
@@ -190,7 +206,7 @@ function BloodDonation() {
                                   )}
                                 >
                                   {field.value ? (
-                                    format(field.value, "dd-MM-yyyy")
+                                    format(new Date(field.value), "dd-MM-yyyy")
                                   ) : (
                                     <span>Chọn ngày</span>
                                   )}
@@ -204,8 +220,14 @@ function BloodDonation() {
                             >
                               <Calendar
                                 mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
+                                selected={
+                                  field.value
+                                    ? new Date(field.value)
+                                    : undefined
+                                }
+                                onSelect={(date) =>
+                                  field.onChange(date ? date.toISOString() : "")
+                                }
                                 disabled={(date) =>
                                   date <
                                   new Date(new Date().setHours(0, 0, 0, 0))
@@ -230,26 +252,28 @@ function BloodDonation() {
                           </FormLabel>
                           <FormControl>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                              {timeSlots.map((slot) => {
+                              {timeSlots.map((slot, index) => {
                                 const isPassed = isPassTimeSlot(
                                   slot,
                                   selectedDate
+                                    ? new Date(selectedDate)
+                                    : undefined
                                 );
                                 return (
                                   <Button
                                     key={slot}
                                     type="button"
                                     variant={
-                                      field.value === slot
+                                      field.value === index
                                         ? "default"
                                         : "outline"
                                     }
                                     className={cn(
                                       "w-full h-12 transition-all",
-                                      field.value === slot &&
+                                      field.value === index &&
                                         "bg-primary text-primary-foreground shadow-lg scale-105"
                                     )}
-                                    onClick={() => field.onChange(slot)}
+                                    onClick={() => field.onChange(index)}
                                     disabled={isPassed}
                                   >
                                     {slot}
@@ -273,19 +297,21 @@ function BloodDonation() {
                           </FormLabel>
                           <FormControl>
                             <div className="grid grid-cols-5 gap-4">
-                              {bloodTypes.map((type) => (
+                              {bloodTypes.map((type, index) => (
                                 <Button
                                   key={type}
                                   type="button"
                                   variant={
-                                    field.value === type ? "default" : "outline"
+                                    field.value === index
+                                      ? "default"
+                                      : "outline"
                                   }
                                   className={cn(
                                     "w-full h-12 transition-all",
-                                    field.value === type &&
+                                    field.value === index &&
                                       "bg-primary text-primary-foreground shadow-lg scale-105"
                                   )}
-                                  onClick={() => field.onChange(type)}
+                                  onClick={() => field.onChange(index)}
                                 >
                                   {type}
                                 </Button>
@@ -299,8 +325,9 @@ function BloodDonation() {
 
                     <div className="pt-6">
                       <Button
-                        type="submit"
+                        type="button"
                         className="w-full md:w-[200px] h-12 text-lg font-semibold float-right"
+                        onClick={() => setActiveStep(1)}
                       >
                         Tiếp tục
                       </Button>
@@ -322,12 +349,12 @@ function BloodDonation() {
               <CardContent>
                 <Form {...form2}>
                   <form
-                    onSubmit={form2.handleSubmit(onSubmitStep2)}
+                    onSubmit={form2.handleSubmit(onSubmit)}
                     className="space-y-8"
                   >
                     <FormField
                       control={form2.control}
-                      name="transfusionHistory"
+                      name="hasBloodTransfusionHistory"
                       render={({ field }) => (
                         <FormItem className="space-y-3">
                           <FormLabel>
@@ -336,22 +363,20 @@ function BloodDonation() {
                           </FormLabel>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
+                              onValueChange={(val) =>
+                                field.onChange(val === "true")
+                              }
+                              value={String(field.value)}
                               className="flex flex-col space-y-1"
                             >
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="yes" />
-                                </FormControl>
+                                <RadioGroupItem value="true" />
                                 <FormLabel className="font-normal">
                                   Có
                                 </FormLabel>
                               </FormItem>
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="no" />
-                                </FormControl>
+                                <RadioGroupItem value="false" />
                                 <FormLabel className="font-normal">
                                   Không
                                 </FormLabel>
@@ -365,7 +390,7 @@ function BloodDonation() {
 
                     <FormField
                       control={form2.control}
-                      name="fluSymptoms"
+                      name="hasRecentIllnessOrMedication"
                       render={({ field }) => (
                         <FormItem className="space-y-3">
                           <FormLabel>
@@ -375,22 +400,20 @@ function BloodDonation() {
                           </FormLabel>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
+                              onValueChange={(val) =>
+                                field.onChange(val === "true")
+                              }
+                              value={String(field.value)}
                               className="flex flex-col space-y-1"
                             >
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="yes" />
-                                </FormControl>
+                                <RadioGroupItem value="true" />
                                 <FormLabel className="font-normal">
                                   Có
                                 </FormLabel>
                               </FormItem>
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="no" />
-                                </FormControl>
+                                <RadioGroupItem value="false" />
                                 <FormLabel className="font-normal">
                                   Không
                                 </FormLabel>
@@ -404,7 +427,7 @@ function BloodDonation() {
 
                     <FormField
                       control={form2.control}
-                      name="bleedingIncidents"
+                      name="hasRecentSkinPenetrationOrSurgery"
                       render={({ field }) => (
                         <FormItem className="space-y-3">
                           <FormLabel>
@@ -414,22 +437,20 @@ function BloodDonation() {
                           </FormLabel>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
+                              onValueChange={(val) =>
+                                field.onChange(val === "true")
+                              }
+                              value={String(field.value)}
                               className="flex flex-col space-y-1"
                             >
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="yes" />
-                                </FormControl>
+                                <RadioGroupItem value="true" />
                                 <FormLabel className="font-normal">
                                   Có
                                 </FormLabel>
                               </FormItem>
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="no" />
-                                </FormControl>
+                                <RadioGroupItem value="false" />
                                 <FormLabel className="font-normal">
                                   Không
                                 </FormLabel>
@@ -443,7 +464,7 @@ function BloodDonation() {
 
                     <FormField
                       control={form2.control}
-                      name="drugInjection"
+                      name="hasDrugInjectionHistory"
                       render={({ field }) => (
                         <FormItem className="space-y-3">
                           <FormLabel>
@@ -451,22 +472,20 @@ function BloodDonation() {
                           </FormLabel>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
+                              onValueChange={(val) =>
+                                field.onChange(val === "true")
+                              }
+                              value={String(field.value)}
                               className="flex flex-col space-y-1"
                             >
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="yes" />
-                                </FormControl>
+                                <RadioGroupItem value="true" />
                                 <FormLabel className="font-normal">
                                   Có
                                 </FormLabel>
                               </FormItem>
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="no" />
-                                </FormControl>
+                                <RadioGroupItem value="false" />
                                 <FormLabel className="font-normal">
                                   Không
                                 </FormLabel>
@@ -480,7 +499,7 @@ function BloodDonation() {
 
                     <FormField
                       control={form2.control}
-                      name="epidemicTravel"
+                      name="hasVisitedEpidemicArea"
                       render={({ field }) => (
                         <FormItem className="space-y-3">
                           <FormLabel>
@@ -490,22 +509,20 @@ function BloodDonation() {
                           </FormLabel>
                           <FormControl>
                             <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
+                              onValueChange={(val) =>
+                                field.onChange(val === "true")
+                              }
+                              value={String(field.value)}
                               className="flex flex-col space-y-1"
                             >
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="yes" />
-                                </FormControl>
+                                <RadioGroupItem value="true" />
                                 <FormLabel className="font-normal">
                                   Có
                                 </FormLabel>
                               </FormItem>
                               <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="no" />
-                                </FormControl>
+                                <RadioGroupItem value="false" />
                                 <FormLabel className="font-normal">
                                   Không
                                 </FormLabel>
@@ -528,234 +545,11 @@ function BloodDonation() {
                       >
                         Quay lại
                       </Button>
-                      <Button type="submit">Tiếp tục</Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Step 3 */}
-          {activeStep === 2 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-center">
-                  Thông tin người hiến
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...form3}>
-                  <form
-                    onSubmit={form3.handleSubmit(onSubmitStep3)}
-                    className="space-y-6 grid grid-cols-2 gap-4"
-                  >
-                    <FormField
-                      control={form3.control}
-                      name="fullName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Họ và tên</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="text"
-                              placeholder="Nhập họ và tên"
-                              onChange={field.onChange}
-                              value={field.value}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form3.control}
-                      name="dateOfBirth"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Ngày sinh</FormLabel>
-                          <BirthDatePicker
-                            onChange={field.onChange}
-                            value={field.value}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form3.control}
-                      name="phoneNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Số điện thoại</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Nhập số điện thoại"
-                              onChange={field.onChange}
-                              value={field.value}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form3.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Địa chỉ</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Nhập địa chỉ"
-                              onChange={field.onChange}
-                              value={field.value}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form3.control}
-                      name="gender"
-                      render={({ field }) => (
-                        <FormItem className="flex items-center">
-                          <FormLabel>Giới tính</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
-                              className="flex ml-10"
-                            >
-                              <FormItem className="flex items-center space-x-3">
-                                <FormControl>
-                                  <RadioGroupItem value="male" />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                  Nam
-                                </FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-3">
-                                <FormControl>
-                                  <RadioGroupItem value="female" />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                  Nữ
-                                </FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form3.control}
-                        name="frontIdCardImage"
-                        render={({ field }) => (
-                          <FormItem className="float-left">
-                            <FormLabel>Ảnh mặt trước CMND/CCCD</FormLabel>
-                            <FormControl>
-                              <div>
-                                <Input
-                                  type="file"
-                                  accept="image/*"
-                                  ref={frontIdCardInputRef}
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      const reader = new FileReader();
-                                      reader.onloadend = () => {
-                                        setFrontIdCardImage(
-                                          reader.result as string
-                                        );
-                                      };
-                                      reader.readAsDataURL(file);
-                                      field.onChange(file);
-                                    }
-                                  }}
-                                />
-                                {frontIdCardImage && (
-                                  <img
-                                    src={frontIdCardImage}
-                                    alt="Preview"
-                                    className="mt-2 max-h-48 max-w-full w-full h-48 rounded border object-contain"
-                                  />
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form3.control}
-                        name="backIdCardImage"
-                        render={({ field }) => (
-                          <FormItem className="float-left">
-                            <FormLabel>Ảnh mặt sau CMND/CCCD</FormLabel>
-                            <FormControl>
-                              <div>
-                                <Input
-                                  type="file"
-                                  accept="image/*"
-                                  ref={backIdCardInputRef}
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      const reader = new FileReader();
-                                      reader.onloadend = () => {
-                                        setBackIdCardImage(
-                                          reader.result as string
-                                        );
-                                      };
-                                      reader.readAsDataURL(file);
-                                      field.onChange(file);
-                                    }
-                                  }}
-                                />
-                                {backIdCardImage && (
-                                  <img
-                                    src={backIdCardImage}
-                                    alt="Preview"
-                                    className="mt-2 max-h-48 max-w-full w-full h-48 rounded border object-contain"
-                                  />
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="col-span-2 flex justify-between pt-6">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          form3.reset();
-                          setActiveStep(1);
-                          setFrontIdCardImage(null);
-                          setBackIdCardImage(null);
-                          if (frontIdCardInputRef.current)
-                            frontIdCardInputRef.current.value = "";
-                          if (backIdCardInputRef.current)
-                            backIdCardInputRef.current.value = "";
-                        }}
-                      >
-                        Quay lại
+                      <Button type="submit" disabled={loading}>
+                        {loading ? "Đang gửi..." : "Hoàn tất"}
                       </Button>
-                      <Button type="submit">Hoàn tất</Button>
                     </div>
+                    {errorMsg && <div className="text-red-500 mt-2">{errorMsg}</div>}
                   </form>
                 </Form>
               </CardContent>
@@ -763,6 +557,37 @@ function BloodDonation() {
           )}
         </div>
       </div>
+      {successMsg && (
+        <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Đăng ký hiến máu thành công!</DialogTitle>
+              <DialogDescription>
+                Cảm ơn bạn đã đăng ký hiến máu. Chúng tôi sẽ liên hệ với bạn sớm.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex justify-center gap-4">
+              <Button
+                onClick={() => {
+                  setShowSuccessDialog(false);
+                  navigate("/");
+                }}
+              >
+                Về trang chủ
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowSuccessDialog(false);
+                  navigate("/blood-donation-history");
+                }}
+              >
+                Xem lịch sử đăng ký
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

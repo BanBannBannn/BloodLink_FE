@@ -30,6 +30,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import { useAuth } from "@/contexts/AuthContext";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
@@ -44,14 +45,15 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
+  const { user } = useAuth();
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: "Mạnh Cường",
-      email: "cuong@example.com",
-      phone: "0123456789",
-      address: "Hà Nội, Việt Nam",
+      fullName: user?.fullName,
+      email: user?.email,
+      phone: user?.phoneNo,
+      address: user?.address,
       dateOfBirth: "2000-01-01",
       bloodType: "A+",
     },
@@ -129,7 +131,10 @@ function ProfilePage() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-2 grid grid-cols-1 md:grid-cols-2 gap-4"
+              >
                 <InfoRow
                   icon={User}
                   label="Họ và tên"
@@ -157,9 +162,13 @@ function ProfilePage() {
                 <InfoRow
                   icon={Calendar}
                   label="Ngày sinh"
-                  value={format(new Date(form.getValues("dateOfBirth")), "dd MMMM, yyyy", {
-                    locale: vi,
-                  })}
+                  value={format(
+                    new Date(form.getValues("dateOfBirth")),
+                    "dd MMMM, yyyy",
+                    {
+                      locale: vi,
+                    }
+                  )}
                   name="dateOfBirth"
                 />
                 <InfoRow
@@ -190,4 +199,4 @@ function ProfilePage() {
   );
 }
 
-export default ProfilePage; 
+export default ProfilePage;
