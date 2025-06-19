@@ -1,15 +1,19 @@
 import NavBar from "@/components/NavBar";
-import React from "react";
+import Footer from "@/components/Footer";
 import { Outlet } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 function UserLayout() {
   return (
-    <>
-      <NavBar />
-      <div>
-        <Outlet />
-      </div>
-    </>
+    <div className="flex flex-col min-h-screen">
+      <AuthProvider>
+        <NavBar />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <Footer />
+      </AuthProvider>
+    </div>
   );
 }
 
