@@ -1,9 +1,19 @@
-import React from "react";
 import { Link } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Button } from "./ui/button";
+import { History, LogOut, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 function NavBar() {
+  const { user, logout } = useAuth();
+
   return (
-    <nav className="bg-white w-full shadow-lg fixed z-50 px-4">
+    <nav className="bg-white w-full shadow-lg px-4 z-50">
       <div className="flex justify-between items-center h-16">
         <div className="flex items-center">
           <svg
@@ -18,20 +28,61 @@ function NavBar() {
             BloodLink
           </span>
         </div>
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden md:flex items-center space-x-8">
           {[
-            {name: "Trang chủ", link: "/"},
-            {name: "Hiến máu", link: "/donate-blood"},
-            {name: "Nhóm máu", link: "/blood-types"},
-            {name: "Khẩn cấp", link: "/emergency"},
-          ].map((item) => (
-            <Link to={item.link}
-              key={item.name}
-              className="text-gray-600 hover:text-red-600 transition-colors"
-            >
-              {item.name}
-            </Link>
-          ))}
+            { name: "Trang chủ", link: "/" },
+            { name: "Hiến máu", link: "/blood-donation" },
+            { name: "Nhóm máu", link: "/blood-types" },
+            { name: "Khẩn cấp", link: "/emergency" },
+            { name: "Đăng nhập", link: "/login" },
+          ].map((item) => {
+            if (item.name === "Đăng nhập" && user) {
+              console.log(user);
+              return null;
+            }
+            return (
+              <Link
+                to={item.link}
+                key={item.name}
+                className="text-gray-600 hover:text-red-600 transition-colors"
+              >
+                {item.name}
+              </Link>
+            );
+          })}
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant={"secondary"}>{user.fullName}</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>
+                  <Link to="/profile" className="flex items-center gap-2">
+                    <User />
+                    Thông tin cá nhân
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link
+                    to="/blood-donation-history"
+                    className="flex items-center gap-2"
+                  >
+                    <History />
+                    Lịch sử hiến máu
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <button
+                    onClick={logout}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <LogOut />
+                    Đăng xuất
+                  </button>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </nav>
