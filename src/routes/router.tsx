@@ -14,7 +14,7 @@ import BloodComponentsTable from "@/pages/bloodStorage/BloodComponentsTable";
 import BloodHistoryTable from "@/pages/bloodStorage/BloodHistoryTable";
 import BloodRequestTable from "@/pages/bloodStorage/BloodRequestTable";
 
-import BloodDonationScheduleTable from "@/pages/nurse/BloodDonationScheduleTable";
+import BloodDonationScheduleTable from "@/pages/nurse/BloodDonationTable";
 import BloodDonationRequestsTable from "@/pages/nurse/BloodDonationRequestsTable";
 import NurseDashboard from "@/pages/nurse/Dashboard";
 import NurseLayout from "@/layouts/NurseLayout";

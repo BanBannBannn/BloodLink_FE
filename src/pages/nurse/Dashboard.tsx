@@ -1,5 +1,5 @@
 import React from "react";
-import BloodDonationScheduleTable from "./BloodDonationScheduleTable";
+import BloodDonationScheduleTable from "./BloodDonationTable";
 import BloodDonationRequestsTable from "./BloodDonationRequestsTable";
 
 

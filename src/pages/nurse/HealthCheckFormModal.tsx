@@ -74,7 +74,7 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
     return (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-4 w-96 max-h-[90vh] overflow-y-auto">
-                <h2 className="text-lg font-semibold mb-2">Health Check Form</h2>
+                <h2 className="text-lg font-semibold mb-2">Phiếu kiểm tra</h2>
 
                 {alertMessage && (
                     <Alert variant="destructive" className="mb-2">
@@ -85,8 +85,8 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
 
                 {[{ label: "Tuổi", value: age, set: setAge, key: "age" },
                 { label: "Cân nặng (kg)", value: weight, set: setWeight, key: "weight" },
-                { label: "Thể tích máu", value: volume, set: setVolume, key: "volumeBloodDonated" },
-                { label: "Hemoglobin", value: hemoglobin, set: setHemoglobin, key: "hemoglobin" }].map(({ label, value, set, key }) => (
+                { label: "Thể tích máu (ml)", value: volume, set: setVolume, key: "volumeBloodDonated" },
+                { label: "Huyết sắc tố (g/l)", value: hemoglobin, set: setHemoglobin, key: "hemoglobin" }].map(({ label, value, set, key }) => (
                     <div className="mb-2" key={label}>
                         <label>{label}:</label>
                         <input

@@ -5,6 +5,8 @@ import axiosInstance from "@/lib/axios";
 import HealthCheckFormModal from "./HealthCheckFormModal";
 import { EyeIcon, MoreHorizontal } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 export default function BloodDonationRequestsTable() {
   const { data, loading, error, refresh } = useBloodDonationRequests();
@@ -13,6 +15,8 @@ export default function BloodDonationRequestsTable() {
   const [showHealthForm, setShowHealthForm] = useState(false);
   const [viewHealthForm, setViewHealthForm] = useState<any | null>(null);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleReject = async (id: string) => {
     const rejectNote = prompt("Nhập lý do từ chối:");
@@ -23,12 +27,10 @@ export default function BloodDonationRequestsTable() {
 
     try {
       await axiosInstance.put(
-        `/api/blood-donation-requests/status/${id}?status=2&rejectNote=${encodeURIComponent(
-          rejectNote.trim()
-        )}`
+        `/api/blood-donation-requests/status/${id}?status=2&rejectNote=${encodeURIComponent(rejectNote.trim())}`
       );
       refresh();
-    } catch (error) {
+    } catch {
       setAlertMessage("Đã xảy ra lỗi khi từ chối yêu cầu.");
     }
   };
@@ -38,9 +40,38 @@ export default function BloodDonationRequestsTable() {
     setShowHealthForm(true);
   };
 
+  const filteredData = data.filter((item) => {
+    const matchesStatus =
+      statusFilter === "all" || String(item.status) === statusFilter;
+    const matchesSearch = item.fullName
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Danh sách yêu cầu hiến máu</h1>
+
+      <div className="flex gap-4 mb-4">
+        <Input
+          placeholder="Tìm theo tên..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-48"
+        />
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-38">
+            <SelectValue placeholder="Lọc theo trạng thái" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="0">Đang chờ</SelectItem>
+            <SelectItem value="1">Đã duyệt</SelectItem>
+            <SelectItem value="2">Từ chối</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {alertMessage && (
         <Alert variant="destructive" className="mb-4">
@@ -57,7 +88,7 @@ export default function BloodDonationRequestsTable() {
         <table className="w-full border">
           <thead className="bg-gray-200">
             <tr>
-              <th className="p-2">ID</th>
+              <th className="p-2">STT</th>
               <th className="p-2">Tên</th>
               <th className="p-2">Nhóm máu</th>
               <th className="p-2">Ngày yêu cầu</th>
@@ -66,21 +97,21 @@ export default function BloodDonationRequestsTable() {
             </tr>
           </thead>
           <tbody>
-            {data.map((item) => (
+            {filteredData.map((item, index) => (
               <React.Fragment key={item.id}>
                 <tr className="border-t text-center">
-                  <td className="p-2">{item.id}</td>
+                  <td className="p-2">{index + 1}</td>
                   <td className="p-2">{item.fullName}</td>
-                  <td className="p-2">{["O", "A", "B", "AB"][item.bloodType]}</td>
+                  <td className="p-2">{["A", "B", "AB", "O"][item.bloodType]}</td>
                   <td className="p-2">
                     {new Date(item.donatedDateRequest).toLocaleDateString("vi-VN")}
                   </td>
                   <td
                     className={`p-2 capitalize ${item.status === 0
-                        ? "text-yellow-600"
-                        : item.status === 1
-                          ? "text-green-600"
-                          : "text-red-600"
+                      ? "text-yellow-600"
+                      : item.status === 1
+                        ? "text-green-600"
+                        : "text-red-600"
                       }`}
                   >
                     {item.status === 0
@@ -91,7 +122,10 @@ export default function BloodDonationRequestsTable() {
                   </td>
                   <td className="p-2 flex gap-2 justify-center">
                     {item.status === 0 && !item.healthCheckForm && (
-                      <Button onClick={() => handleOpenForm(item)}>
+                      <Button
+                        onClick={() => handleOpenForm(item)}
+                        className="text-blue-500 border border-blue-500 hover:bg-blue-100 bg-white"
+                      >
                         Điền form
                       </Button>
                     )}
@@ -99,18 +133,18 @@ export default function BloodDonationRequestsTable() {
                       <>
                         <Button
                           onClick={() => handleReject(item.id)}
-                          className="text-red-500 border border-red-500 hover:bg-red-100"
+                          className="text-red-500 border border-red-500 hover:bg-red-100 bg-white"
                         >
                           Từ chối
                         </Button>
                         <Button
-                          onClick={() => {
+                          onClick={() =>
                             axiosInstance
                               .put(`/api/blood-donation-requests/status/${item.id}?status=1`)
                               .then(refresh)
-                              .catch(() => setAlertMessage("Cập nhật trạng thái thất bại!"));
-                          }}
-                          className="text-green-500 border border-green-500 hover:bg-green-100"
+                              .catch(() => setAlertMessage("Cập nhật trạng thái thất bại!"))
+                          }
+                          className="text-green-500 border border-green-500 hover:bg-green-100 bg-white"
                         >
                           Duyệt
                         </Button>
@@ -145,15 +179,8 @@ export default function BloodDonationRequestsTable() {
                       <p><strong>Giới tính:</strong> {item.gender ? "Nam" : "Nữ"}</p>
                       <p><strong>Tuổi:</strong> {item.age || "-"}</p>
                       <p><strong>Mã định danh:</strong> {item.identityId || "-"}</p>
-                      <p><strong>Nhóm máu:</strong> {[
-                        "O",
-                        "A",
-                        "B",
-                        "AB",
-                      ][item.bloodType]}</p>
-                      <p><strong>Ngày yêu cầu:</strong> {new Date(
-                        item.donatedDateRequest
-                      ).toLocaleDateString("vi-VN")}</p>
+                      <p><strong>Nhóm máu:</strong> {["O", "A", "B", "AB"][item.bloodType]}</p>
+                      <p><strong>Ngày yêu cầu:</strong> {new Date(item.donatedDateRequest).toLocaleDateString("vi-VN")}</p>
                       <p><strong>Ghi chú:</strong> {item.reasonReject || item.healthCheckForm?.note || "-"}</p>
                     </td>
                   </tr>
