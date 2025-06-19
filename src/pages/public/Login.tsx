@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
+import { auth, googleProvider } from "@/utils/firebase";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -42,6 +44,32 @@ function LoginPage() {
     } catch (error) {
       setIsLoading(false);
       setErrorMessage("Email hoặc mật khẩu không đúng");
+    }
+  };
+
+  const googleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = await result.user.getIdTokenResult();
+      console.log(user);
+      // const idToken = await user.getIdToken();
+
+      // // Gửi token về backend để xác minh
+      // const response = await fetch("http://localhost:3000/api/auth/google", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ token: idToken }),
+      // });
+
+      // const data = await response.json();
+      // console.log("User info from backend:", data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Login error:", error);
+      setIsLoading(false);
     }
   };
 
@@ -97,7 +125,12 @@ function LoginPage() {
               <Separator className="flex-1" />
             </div>
 
-            <Button className="w-full bg-transparent border text-black hover:bg-gray-100">
+            <Button
+              type="button"
+              className="w-full bg-transparent border text-black hover:bg-gray-100 flex items-center justify-center"
+              onClick={googleLogin}
+              disabled={isLoading}
+            >
               <svg
                 className="mr-2 h-5 w-5"
                 xmlns="http://www.w3.org/2000/svg"
@@ -120,7 +153,7 @@ function LoginPage() {
                   d="M43.6 20.5H42V20H24v8h11.3c-1.3 3.5-4.3 6.2-8.3 7.2l6.2 5.2C38.3 37.2 44 31.2 44 24c0-1.3-.1-2.7-.4-3.5z"
                 />
               </svg>
-              Đăng nhập bằng Google
+              {isLoading ? "Đang gửi..." : "Đăng nhập bằng Google"}
             </Button>
             <p className="text-center text-sm">
               Chưa có tài khoản?{" "}

@@ -19,3 +19,10 @@ export const bloodDonationRequest = async (bloodRequest: BloodRequest) => {
   );
   return response;
 };
+
+export const bloodRequestHistory = async () => {
+  const response = await apiClient.get(
+    "/blood-donation-requests/user-requests"
+  );
+  return response;
+};

@@ -3,7 +3,7 @@ import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from "a
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
-  baseURL: "https://localhost:7202/api",
+  baseURL: import.meta.env.VITE_PUBLIC_API,
   headers: {
     "Content-Type": "application/json",
   },

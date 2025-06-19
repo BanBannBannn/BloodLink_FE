@@ -122,18 +122,16 @@ function BloodDonation() {
   const [activeStep, setActiveStep] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const navigate = useNavigate();
 
   const onSubmit = async (data: Step2Data) => {
     setLoading(true);
     setErrorMsg("");
-    setSuccessMsg("");
     const dataToSubmit = { ...form1.getValues(), ...data, reasonReject: "" };
     try {
-      await bloodDonationRequest(dataToSubmit);
-      setSuccessMsg("Đăng ký hiến máu thành công!");
+      const response = await bloodDonationRequest(dataToSubmit);
+      console.log(response.data);
       setShowSuccessDialog(true);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -549,7 +547,9 @@ function BloodDonation() {
                         {loading ? "Đang gửi..." : "Hoàn tất"}
                       </Button>
                     </div>
-                    {errorMsg && <div className="text-red-500 mt-2">{errorMsg}</div>}
+                    {errorMsg && (
+                      <div className="text-red-500 mt-2">{errorMsg}</div>
+                    )}
                   </form>
                 </Form>
               </CardContent>
@@ -557,37 +557,35 @@ function BloodDonation() {
           )}
         </div>
       </div>
-      {successMsg && (
-        <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Đăng ký hiến máu thành công!</DialogTitle>
-              <DialogDescription>
-                Cảm ơn bạn đã đăng ký hiến máu. Chúng tôi sẽ liên hệ với bạn sớm.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex justify-center gap-4">
-              <Button
-                onClick={() => {
-                  setShowSuccessDialog(false);
-                  navigate("/");
-                }}
-              >
-                Về trang chủ
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowSuccessDialog(false);
-                  navigate("/blood-donation-history");
-                }}
-              >
-                Xem lịch sử đăng ký
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Đăng ký hiến máu thành công!</DialogTitle>
+            <DialogDescription>
+              Cảm ơn bạn đã đăng ký hiến máu. Chúng tôi sẽ liên hệ với bạn sớm.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex justify-center gap-4">
+            <Button
+              onClick={() => {
+                setShowSuccessDialog(false);
+                navigate("/");
+              }}
+            >
+              Về trang chủ
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowSuccessDialog(false);
+                navigate("/blood-donation-history");
+              }}
+            >
+              Xem lịch sử đăng ký
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
