@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -49,6 +50,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const toast = useToast()
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const form = useForm<RegisterFormData>({
@@ -88,7 +90,7 @@ function RegisterPage() {
     const result = await registerApi(formData);
 
     if (result.success) {
-      console.log("dang ki thanh cong");
+      toast.success("Đăng kí thành công")
       form.reset();
       setIsLoading((prev) => !prev);
       navigate("/login");
@@ -182,6 +184,27 @@ function RegisterPage() {
 
                 <FormField
                   control={form.control}
+                  name="Addresss"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Địa chỉ</FormLabel>
+                      <FormControl>
+                        <Input
+                          id="address"
+                          type="text"
+                          placeholder="Địa chỉ"
+                          onChange={field.onChange}
+                          value={field.value}
+                          className="mt-1 h-11 rounded-lg border-gray-200 focus:border-red-500 focus:ring-red-500"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="Password"
                   render={({ field }) => (
                     <FormItem>
@@ -214,27 +237,6 @@ function RegisterPage() {
                           onChange={field.onChange}
                           value={field.value}
                           placeholder="*********"
-                          className="mt-1 h-11 rounded-lg border-gray-200 focus:border-red-500 focus:ring-red-500"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="Addresss"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Địa chỉ</FormLabel>
-                      <FormControl>
-                        <Input
-                          id="address"
-                          type="text"
-                          placeholder="Địa chỉ"
-                          onChange={field.onChange}
-                          value={field.value}
                           className="mt-1 h-11 rounded-lg border-gray-200 focus:border-red-500 focus:ring-red-500"
                         />
                       </FormControl>

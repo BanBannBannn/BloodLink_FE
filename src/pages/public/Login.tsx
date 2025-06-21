@@ -1,9 +1,10 @@
-import { loginApi } from "@/api/authApi";
+import { loginApi, loginWithGoogleApi } from "@/api/authApi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { auth, googleProvider } from "@/utils/firebase";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +33,7 @@ function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const navigate = useNavigate();
   const { login } = useAuth();
+  const toast = useToast();
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -39,6 +41,7 @@ function LoginPage() {
       const result = await loginApi(data);
       login(result.user, result.token);
       setIsLoading(false);
+      toast.success("Đăng nhập thành công");
       navigate("/");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
@@ -51,22 +54,13 @@ function LoginPage() {
     setIsLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const user = await result.user.getIdTokenResult();
-      console.log(user);
-      // const idToken = await user.getIdToken();
-
-      // // Gửi token về backend để xác minh
-      // const response = await fetch("http://localhost:3000/api/auth/google", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({ token: idToken }),
-      // });
-
-      // const data = await response.json();
-      // console.log("User info from backend:", data);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+      const response = await loginWithGoogleApi(idToken);
+      login(response.data.user, response.data.token);
       setIsLoading(false);
+      toast.success("Đăng nhập thành công");
+      navigate("/");
     } catch (error) {
       console.error("Login error:", error);
       setIsLoading(false);

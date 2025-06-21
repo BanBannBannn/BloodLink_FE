@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 function NavBar() {
   const { user, logout } = useAuth();
 
+  console.log(user)
+
   return (
     <nav className="bg-white w-full shadow-lg px-4 z-50">
       <div className="flex justify-between items-center h-16">
@@ -32,12 +34,10 @@ function NavBar() {
           {[
             { name: "Trang chủ", link: "/" },
             { name: "Hiến máu", link: "/blood-donation" },
-            { name: "Nhóm máu", link: "/blood-types" },
-            { name: "Khẩn cấp", link: "/emergency" },
+            { name: "Câu hỏi thường gặp", link: "/faq" },
             { name: "Đăng nhập", link: "/login" },
           ].map((item) => {
             if (item.name === "Đăng nhập" && user) {
-              console.log(user);
               return null;
             }
             return (

@@ -5,6 +5,7 @@ import RegisterPage from "@/pages/public/Register";
 import BloodDonation from "@/pages/user/BloodDonation";
 import ProfilePage from "@/pages/user/Profile";
 import BloodDonationHistory from "@/pages/user/BloodDonationHistory";
+import FAQ from "@/pages/public/FAQ";
 import { createBrowserRouter } from "react-router-dom";
 
 export const router = createBrowserRouter([
@@ -23,6 +24,10 @@ export const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegisterPage />,
+      },
+      {
+        path: "/faq",
+        element: <FAQ />,
       },
       {
         path: "/blood-donation",
