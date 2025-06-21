@@ -12,15 +12,15 @@ import AdminDashboard from "@/pages/public/admin/Dashboard";
 import AccountManagement from "@/pages/public/admin/AccountManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
-import SupervisorDashboard from "@/pages/public/bloodStorage/Dashboard";
-import BloodRawTable from "@/pages/public/bloodStorage/BloodRawTable";
-import BloodComponentsTable from "@/pages/public/bloodStorage/BloodComponentsTable";
-import BloodHistoryTable from "@/pages/public/bloodStorage/BloodHistoryTable";
-import BloodRequestTable from "@/pages/public/bloodStorage/BloodRequestTable";
+import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
+import BloodRawTable from "@/pages/bloodStorage/BloodRawTable";
+import BloodComponentsTable from "@/pages/bloodStorage/BloodComponentsTable";
+import BloodHistoryTable from "@/pages/bloodStorage/BloodHistoryTable";
+import BloodRequestTable from "@/pages/bloodStorage/BloodRequestTable";
 
-import BloodDonateRequestStatusTable from "@/pages/public/nurse/BloodDonateRequestStatusTable";
-import BloodDonationScheduleTable from "@/pages/public/nurse/BloodDonationScheduleTable";
-import NurseDashboard from "@/pages/public/nurse/Dashboard";
+import BloodDonationScheduleTable from "@/pages/nurse/BloodDonationTable";
+import BloodDonationRequestsTable from "@/pages/nurse/BloodDonationRequestsTable";
+import NurseDashboard from "@/pages/nurse/Dashboard";
 import NurseLayout from "@/layouts/NurseLayout";
 
 import { createBrowserRouter } from "react-router-dom";
@@ -88,8 +88,8 @@ export const router = createBrowserRouter([
     element: <NurseLayout />,
     children: [
       { path: "nurse-dashboard", element: <NurseDashboard /> },
-      { path: "blood-status", element: <BloodDonateRequestStatusTable/> },
-      { path: "blood-requests-table", element: <BloodDonationScheduleTable /> },
+      { path: "blood-donation-table", element: <BloodDonationScheduleTable/> },
+      { path: "blood-requests-table", element: <BloodDonationRequestsTable /> }
     ],
     
   }
