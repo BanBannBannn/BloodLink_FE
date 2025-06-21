@@ -1,6 +1,7 @@
 import React from "react";
-import BloodDonationScheduleTable from "./BloodDonationScheduleTable";
-import BloodDonateRequestStatusTable from "./BloodDonateRequestStatusTable";
+import BloodDonationScheduleTable from "./BloodDonationTable";
+import BloodDonationRequestsTable from "./BloodDonationRequestsTable";
+
 
 export default function NurseDashboard() {
   return (
@@ -9,8 +10,8 @@ export default function NurseDashboard() {
       <div className="mb-6">
         <BloodDonationScheduleTable />
       </div>
-      <div>
-        <BloodDonateRequestStatusTable />
+      <div className="mb-6">
+        <BloodDonationRequestsTable />
       </div>
     </div>
   );

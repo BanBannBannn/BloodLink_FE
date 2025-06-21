@@ -14,8 +14,8 @@ export default function NurseLayout() {
           <Link to="/nurse/blood-requests-table" className="block p-2 rounded hover:bg-gray-100">
             Lịch hiến máu
           </Link>
-          <Link to="/nurse/blood-status" className="block p-2 rounded hover:bg-gray-100">
-            Trạng thái 
+          <Link to="/nurse/blood-donation-table" className="block p-2 rounded hover:bg-gray-100">
+            Danh sách hiến máu
           </Link>
         </nav>
       </aside>
