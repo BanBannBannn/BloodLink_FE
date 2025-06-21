@@ -1,12 +1,13 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setToken, removeToken } from "../api/apiClient";
+import { setToken, removeToken, getToken } from "../api/apiClient";
+import { getUserInfo } from "@/api/userApi";
 
 type User = {
   id: string;
   fullName: string;
   email: string;
-  address: string;
+  addresss: string;
   backUrlIdentity: string;
   frontUrlIdentity: string;
   identityId: string;
@@ -29,25 +30,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (user: User, token: string) => {
     setUser(user);
     setToken(token);
+    localStorage.setItem("userId", user.id);
   };
 
   const logout = () => {
     setUser(null);
     removeToken();
+    localStorage.removeItem("userId");
     navigate("/login");
   };
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) {
-  //     setUser({
-  //       id: "1",
-  //       name: "John Doe",
-  //       email: "john.doe@example.com",
-  //       role: "admin",
-  //     });
-  //   }
-  // }, []);
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const token = getToken();
+        const userId = localStorage.getItem("userId");
+        if (token && userId) {
+          const response = await getUserInfo(userId);
+          setUser(response.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getUser();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

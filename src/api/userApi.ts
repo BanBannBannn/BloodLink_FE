@@ -26,3 +26,15 @@ export const bloodRequestHistory = async () => {
   );
   return response;
 };
+
+export const getUserInfo = async (id: string) => {
+  const response = await apiClient.get(`/user/${id}`);
+  return response;
+};
+
+export const cancelBloodRequest = async (id: string) => {
+  const response = await apiClient.put(
+    `/blood-donation-requests/status/${id}?status=3&rejectNote=`
+  );
+  return response;
+};

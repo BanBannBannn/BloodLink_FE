@@ -5,13 +5,11 @@ import RegisterPage from "@/pages/public/Register";
 import BloodDonation from "@/pages/user/BloodDonation";
 import ProfilePage from "@/pages/user/Profile";
 import BloodDonationHistory from "@/pages/user/BloodDonationHistory";
+import FAQ from "@/pages/public/FAQ";
+
 import AdminLayout from "@/layouts/AdminLayout";
-
-import LoginPage from "@/pages/public/Login";
-import RegisterPage from "@/pages/public/Register";
-
-import AdminDashboard from "@/pages/admin/Dashboard";
-import AccountManagement from "@/pages/admin/AccountManagement";
+import AdminDashboard from "@/pages/public/admin/Dashboard";
+import AccountManagement from "@/pages/public/admin/AccountManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
 import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
@@ -24,6 +22,7 @@ import BloodDonationScheduleTable from "@/pages/nurse/BloodDonationTable";
 import BloodDonationRequestsTable from "@/pages/nurse/BloodDonationRequestsTable";
 import NurseDashboard from "@/pages/nurse/Dashboard";
 import NurseLayout from "@/layouts/NurseLayout";
+
 import { createBrowserRouter } from "react-router-dom";
 
 
@@ -43,6 +42,10 @@ export const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegisterPage />,
+      },
+      {
+        path: "/faq",
+        element: <FAQ />,
       },
       {
         path: "/blood-donation",
