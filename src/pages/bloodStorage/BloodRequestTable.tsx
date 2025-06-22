@@ -43,7 +43,7 @@ export default function BloodRequestTable() {
       <table className="w-full border">
         <thead className="bg-gray-200">
           <tr>
-            <th className="p-2">Mã yêu cầu</th>
+            <th className="p-2">STT</th>
             <th className="p-2">Ngày yêu cầu</th>
             <th className="p-2">Trạng thái</th>
             <th className="p-2">Ghi chú</th>
@@ -73,7 +73,7 @@ export default function BloodRequestTable() {
                     >
                       Duyệt
                     </Button>
-                    <Button
+                    <Button 
                       variant="outline"
                       className="text-red-500 border-red-500 hover:bg-red-100"
                       onClick={() => handleReject(req.id)}

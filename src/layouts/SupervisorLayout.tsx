@@ -12,7 +12,7 @@ export default function SupervisorLayout() {
             Tổng quan
           </Link>
           <Link to="/supervisor/blood-raw" className="block p-2 rounded hover:bg-gray-100">
-            Máu thô
+            Lịch sử hiến máu
           </Link>
           <Link to="/supervisor/blood-components" className="block p-2 rounded hover:bg-gray-100">
             Máu chế phẩm
