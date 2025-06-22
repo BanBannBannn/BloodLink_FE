@@ -12,8 +12,6 @@ import { useAuth } from "@/contexts/AuthContext";
 function NavBar() {
   const { user, logout } = useAuth();
 
-  console.log(user)
-
   return (
     <nav className="bg-white w-full shadow-lg px-4 z-50">
       <div className="flex justify-between items-center h-16">
@@ -52,7 +50,7 @@ function NavBar() {
           })}
           {user && (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger>
                 <Button variant={"secondary"}>{user.fullName}</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>

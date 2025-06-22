@@ -8,8 +8,8 @@ import BloodDonationHistory from "@/pages/user/BloodDonationHistory";
 import FAQ from "@/pages/public/FAQ";
 
 import AdminLayout from "@/layouts/AdminLayout";
-import AdminDashboard from "@/pages/public/admin/Dashboard";
-import AccountManagement from "@/pages/public/admin/AccountManagement";
+import AdminDashboard from "@/pages/admin/Dashboard";
+import AccountManagement from "@/pages/admin/AccountManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
 import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
