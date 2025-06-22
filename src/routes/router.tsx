@@ -7,9 +7,6 @@ import ProfilePage from "@/pages/user/Profile";
 import BloodDonationHistory from "@/pages/user/BloodDonationHistory";
 import AdminLayout from "@/layouts/AdminLayout";
 
-import LoginPage from "@/pages/public/Login";
-import RegisterPage from "@/pages/public/Register";
-
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AccountManagement from "@/pages/admin/AccountManagement";
 
