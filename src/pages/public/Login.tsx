@@ -1,19 +1,20 @@
-import React from "react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { loginApi } from "@/api/authApi";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/AuthContext";
+import { auth, googleProvider } from "@/utils/firebase";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signInWithPopup } from "firebase/auth";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { z } from "zod";
 
 const loginSchema = z.object({
-  identification: z
-    .string()
-    .min(12, "Căn cước công dân có 12 chữ số")
-    .max(12, "Căn cước công dân có 12 chữ số")
-    .regex(/^\d+$/, "Căn cước công dân chỉ được chứa số"),
+  email: z.string().nonempty("Vui lòng nhập email").email("Email không hợp lệ"),
   password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
 });
 
@@ -27,28 +28,70 @@ function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log("Đăng nhập với:", data);
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+    try {
+      const result = await loginApi(data);
+      login(result.user, result.token);
+      setIsLoading(false);
+      navigate("/");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setIsLoading(false);
+      setErrorMessage("Email hoặc mật khẩu không đúng");
+    }
+  };
+
+  const googleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = await result.user.getIdTokenResult();
+      console.log(user);
+      // const idToken = await user.getIdToken();
+
+      // // Gửi token về backend để xác minh
+      // const response = await fetch("http://localhost:3000/api/auth/google", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ token: idToken }),
+      // });
+
+      // const data = await response.json();
+      // console.log("User info from backend:", data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Login error:", error);
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Card className="w-full max-w-sm p-6 shadow-xl">
+      <Card className="w-full max-w-md p-6 shadow-xl">
         <CardContent>
-          <h1 className="text-2xl font-semibold mb-6 text-center">Đăng nhập</h1>
+          <h1 className="mb-4 text-3xl text-center font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+            Đăng nhập
+          </h1>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <Label htmlFor="identification">Căn cước công dân</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="identification"
-                {...register("identification")}
-                placeholder="05621xxxxxxxx"
+                id="email"
+                {...register("email")}
+                placeholder="example@gmail.com"
                 className="mt-2"
               />
-              {errors.identification && (
+              {errors.email && (
                 <p className="text-sm text-red-500 mt-1">
-                  {errors.identification.message}
+                  {errors.email.message}
                 </p>
               )}
             </div>
@@ -67,18 +110,27 @@ function LoginPage() {
                 </p>
               )}
             </div>
+            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
             <Button
               type="submit"
               className="w-full bg-red-600 hover:bg-red-700 text-white"
+              disabled={isLoading}
             >
-              Đăng nhập
+              {isLoading ? "Đang gửi..." : "Đăng nhập"}
             </Button>
-            <div className="flex justify-between items-center gap-x-2">
-              <div className="w-full h-1 bg-gray-200"></div>
-              <span className="text-gray-400">Hoặc</span>
-              <div className="w-full h-1 bg-gray-200"></div>
+
+            <div className="w-full flex items-center justify-center gap-x-2">
+              <Separator className="flex-1" />
+              <span className="text-gray-500 whitespace-nowrap">Hoặc</span>
+              <Separator className="flex-1" />
             </div>
-            <Button className="w-full bg-transparent border text-black hover:bg-gray-100">
+
+            <Button
+              type="button"
+              className="w-full bg-transparent border text-black hover:bg-gray-100 flex items-center justify-center"
+              onClick={googleLogin}
+              disabled={isLoading}
+            >
               <svg
                 className="mr-2 h-5 w-5"
                 xmlns="http://www.w3.org/2000/svg"
@@ -101,11 +153,14 @@ function LoginPage() {
                   d="M43.6 20.5H42V20H24v8h11.3c-1.3 3.5-4.3 6.2-8.3 7.2l6.2 5.2C38.3 37.2 44 31.2 44 24c0-1.3-.1-2.7-.4-3.5z"
                 />
               </svg>
-              Đăng nhập bằng Google
+              {isLoading ? "Đang gửi..." : "Đăng nhập bằng Google"}
             </Button>
             <p className="text-center text-sm">
               Chưa có tài khoản?{" "}
-              <Link className="hover:underline hover:text-blue-400" to={"/register"}>
+              <Link
+                to={"/register"}
+                className="font-semibold text-red-600 hover:text-red-700 transition-colors"
+              >
                 Đăng kí
               </Link>
             </p>
