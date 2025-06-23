@@ -1,7 +1,4 @@
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -9,95 +6,166 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import {
   Droplet,
-  Clock,
-  MapPinned,
-  Search,
-  CalendarRange,
   Filter,
+  XCircle,
+  CheckCircle2,
+  Loader2,
+  CalendarRange,
+  Clock,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { bloodRequestHistory, cancelBloodRequest } from "@/api/userApi";
+import { bloodTypes, timeSlots } from "@/constants/constants";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
 
-// Mock data for donation history
-const mockDonationHistory = [
+const STATUS_MAP = [
   {
-    id: 1,
-    date: "2024-03-15",
-    location: "Bệnh viện Bạch Mai",
-    bloodType: "A+",
-    amount: "350ml",
-    status: "Hoàn thành",
-    doctor: "BS. Nguyễn Văn A",
-    nextDonationDate: "2024-06-15",
-    hemoglobin: "14.5 g/dL",
-    notes: "Hiến máu thành công, sức khỏe tốt",
+    label: "Đang xử lý",
+    color: "bg-yellow-100 text-yellow-800",
+    icon: Loader2,
   },
   {
-    id: 2,
-    date: "2023-12-20",
-    location: "Viện Huyết học",
-    bloodType: "A+",
-    amount: "350ml",
-    status: "Hoàn thành",
-    doctor: "BS. Trần Thị B",
-    nextDonationDate: "2024-03-20",
-    hemoglobin: "13.8 g/dL",
-    notes: "Hiến máu thành công, cần nghỉ ngơi nhiều",
+    label: "Đã duyệt",
+    color: "bg-green-100 text-green-800",
+    icon: CheckCircle2,
   },
-  {
-    id: 3,
-    date: "2023-09-05",
-    location: "Bệnh viện Việt Đức",
-    bloodType: "A+",
-    amount: "350ml",
-    status: "Hoàn thành",
-    doctor: "BS. Lê Văn C",
-    nextDonationDate: "2023-12-05",
-    hemoglobin: "14.2 g/dL",
-    notes: "Hiến máu thành công, uống nhiều nước",
-  },
+  { label: "Đã từ chối", color: "bg-red-100 text-red-800", icon: XCircle },
+  { label: "Đã hủy", color: "bg-gray-100 text-gray-800", icon: XCircle },
 ];
 
-function BloodDonationHistoryPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedBloodType, setSelectedBloodType] = useState<string>("all");
+// Define type for donation record
+interface BloodDonationRecord {
+  id: string;
+  userId: string;
+  bloodType: number;
+  status: number;
+  reasonReject: string;
+  donatedDateRequest: string;
+  timeSlot: number;
+  hasBloodTransfusionHistory: boolean;
+  hasRecentIllnessOrMedication: boolean;
+  hasRecentSkinPenetrationOrSurgery: boolean;
+  hasDrugInjectionHistory: boolean;
+  hasVisitedEpidemicArea: boolean;
+  identityId: string;
+  fullName: string;
+  age: number;
+  gender: boolean;
+  phoneNo: string;
+  email: string;
+  addresss: string;
+  healthCheckForm: unknown;
+  bloodDonation: unknown;
+  isDeleted: boolean;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string | null;
+  updatedBy: string | null;
+}
 
-  const filteredHistory = mockDonationHistory.filter((donation) => {
-    const matchesSearch = donation.location
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      selectedStatus === "all" || donation.status === selectedStatus;
-    const matchesBloodType =
-      selectedBloodType === "all" || donation.bloodType === selectedBloodType;
-    return matchesSearch && matchesStatus && matchesBloodType;
+function BloodDonationHistoryPage() {
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [history, setHistory] = useState<BloodDonationRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const toast = useToast();
+  const cancelButtonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  // Mở dialog xác nhận hủy
+  const handleOpenCancelDialog = (id: string) => {
+    setCancelId(id);
+    setOpenDialog(true);
+    setTimeout(() => {
+      confirmButtonRef.current?.focus();
+    }, 0);
+  };
+
+  // Xác nhận hủy
+  const handleConfirmCancel = async () => {
+    if (cancelId) {
+      try {
+        const response = await cancelBloodRequest(cancelId);
+        const updated = response.data;
+        setHistory((prev) =>
+          prev.map((item) =>
+            item.id === updated.id ? { ...item, ...updated } : item
+          )
+        );
+        toast.success("Hủy đăng ký thành công!");
+      } catch {
+        toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+      }
+    }
+    setOpenDialog(false);
+    if (cancelId) {
+      setTimeout(() => {
+        cancelButtonRefs.current[cancelId!]?.focus();
+      }, 0);
+    }
+    setCancelId(null);
+  };
+
+  // Đóng dialog
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    if (cancelId) {
+      setTimeout(() => {
+        cancelButtonRefs.current[cancelId!]?.focus();
+      }, 0);
+    }
+    setCancelId(null);
+  };
+
+  useEffect(() => {
+    const getBloodHistory = async () => {
+      try {
+        setLoading(true);
+        const response = await bloodRequestHistory();
+        console.log(response.data.records);
+        setHistory(response.data.records || []);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (error) {
+        setHistory([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getBloodHistory();
+  }, []);
+
+  const filteredHistory = history.filter((donation) => {
+    if (selectedStatus === "all") return true;
+    return donation.status === Number(selectedStatus);
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br bg-gray-50 py-8 px-4 md:px-8">
+      <div className="max-w-4xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Lịch sử hiến máu</h1>
+            <h1 className="text-3xl font-bold text-red-700 flex items-center gap-2">
+              <Droplet className="w-8 h-8 text-red-500" /> Lịch sử hiến máu
+            </h1>
             <p className="text-gray-500 mt-1">
-              Xem lại các lần hiến máu của bạn
+              Xem lại các lần đăng ký hiến máu của bạn
+            </p>
+            <p className="mt-2 text-base font-semibold text-red-600">
+              Tổng số lần đăng ký: {history.length}
             </p>
           </div>
           <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-            <div className="relative flex-1 md:flex-initial">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
-              <Input
-                placeholder="Tìm kiếm theo địa điểm..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger className="w-full md:w-[180px]">
                 <Filter className="w-4 h-4 mr-2" />
@@ -105,110 +173,127 @@ function BloodDonationHistoryPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="Hoàn thành">Hoàn thành</SelectItem>
-                <SelectItem value="Đang xử lý">Đang xử lý</SelectItem>
-                <SelectItem value="Đã hủy">Đã hủy</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={selectedBloodType} onValueChange={setSelectedBloodType}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <Droplet className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Nhóm máu" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="A+">A+</SelectItem>
-                <SelectItem value="A-">A-</SelectItem>
-                <SelectItem value="B+">B+</SelectItem>
-                <SelectItem value="B-">B-</SelectItem>
-                <SelectItem value="O+">O+</SelectItem>
-                <SelectItem value="O-">O-</SelectItem>
-                <SelectItem value="AB+">AB+</SelectItem>
-                <SelectItem value="AB-">AB-</SelectItem>
+                <SelectItem value="0">Đang xử lý</SelectItem>
+                <SelectItem value="1">Đã duyệt</SelectItem>
+                <SelectItem value="2">Đã từ chối</SelectItem>
+                <SelectItem value="3">Đã hủy</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
-
-        <div className="space-y-6">
-          {filteredHistory.map((donation) => (
-            <Card key={donation.id}>
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Left side - Basic info */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                        <Droplet className="w-6 h-6 text-red-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold">
-                          {donation.bloodType} • {donation.amount}
-                        </h3>
-                        <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                          {donation.status}
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <Loader2 className="animate-spin w-8 h-8 text-red-500" />
+          </div>
+        ) : filteredHistory.length === 0 ? (
+          <div className="text-center text-gray-500 py-12">
+            Không có lịch sử hiến máu.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredHistory.map((donation) => {
+              const statusInfo = STATUS_MAP[donation.status] || STATUS_MAP[0];
+              const StatusIcon = statusInfo.icon;
+              return (
+                <Card
+                  key={donation.id}
+                  className="border border-red-200 bg-white p-0 rounded-xl transition-all duration-200 hover:shadow-lg hover:border-red-400 group"
+                >
+                  <CardContent className="p-5 flex flex-col gap-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-white text-lg font-bold shadow-md border-4 border-white group-hover:border-red-200 transition-all">
+                          {bloodTypes[donation.bloodType] || "?"}
+                        </div>
+                        <span className="text-lg font-bold text-gray-900">
+                          {donation.fullName}
                         </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${statusInfo.color} border border-opacity-30 border-red-300 group-hover:shadow-md transition-all`}
+                        >
+                          <StatusIcon className="w-4 h-4" /> {statusInfo.label}
+                        </span>
+                        {donation.status === 0 && (
+                          <button
+                            className="ml-2 px-3 py-1 text-xs font-semibold rounded bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 transition-all"
+                            onClick={() => handleOpenCancelDialog(donation.id)}
+                            ref={el => { cancelButtonRefs.current[donation.id] = el; }}
+                          >
+                            Hủy
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <div className="space-y-2 text-sm text-gray-500">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <span>
-                          {format(new Date(donation.date), "dd MMMM, yyyy", {
-                            locale: vi,
-                          })}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPinned className="w-4 h-4" />
-                        <span>{donation.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CalendarRange className="w-4 h-4" />
-                        <span>
-                          Lần hiến tiếp theo:{" "}
-                          {format(
-                            new Date(donation.nextDonationDate),
-                            "dd MMMM, yyyy",
-                            { locale: vi }
-                          )}
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <CalendarRange className="w-4 h-4 text-red-400" />
+                      <span className="font-medium">Ngày đăng ký:</span>{" "}
+                      {donation.createdDate &&
+                        format(new Date(donation.createdDate), "dd/MM/yyyy")}
                     </div>
-                  </div>
-
-                  {/* Right side - Additional info */}
-                  <div className="flex-1 border-t md:border-l md:border-t-0 pt-4 md:pt-0 md:pl-6 mt-4 md:mt-0">
-                    <h4 className="font-medium mb-2">Thông tin chi tiết</h4>
-                    <dl className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Bác sĩ phụ trách:</dt>
-                        <dd className="font-medium text-gray-900">
-                          {donation.doctor}
-                        </dd>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <CalendarRange className="w-4 h-4 text-blue-400" />
+                      <span className="font-medium">
+                        Ngày dự kiến hiến máu:
+                      </span>{" "}
+                      {donation.donatedDateRequest &&
+                        format(
+                          new Date(donation.donatedDateRequest),
+                          "dd/MM/yyyy"
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <Clock className="w-4 h-4 text-red-400" />
+                      <span className="font-medium">Khung giờ:</span>{" "}
+                      {donation.timeSlot !== undefined &&
+                        timeSlots[donation.timeSlot]}
+                    </div>
+                    {donation.status === 2 && donation.reasonReject && (
+                      <div className="text-xs text-red-600 bg-red-50 rounded p-2 mt-1 border border-red-100">
+                        Lý do từ chối: {donation.reasonReject}
                       </div>
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Chỉ số Hemoglobin:</dt>
-                        <dd className="font-medium text-gray-900">
-                          {donation.hemoglobin}
-                        </dd>
-                      </div>
-                      <div className="mt-3">
-                        <dt className="text-gray-500 mb-1">Ghi chú:</dt>
-                        <dd className="text-gray-900 bg-gray-50 p-3 rounded-md">
-                          {donation.notes}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    )}
+                    <div className="mt-3 text-xs text-center text-red-500 font-medium opacity-80">
+                      Cảm ơn bạn đã đóng góp cho cộng đồng!
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+        {/* Dialog xác nhận hủy */}
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Xác nhận hủy đăng ký</DialogTitle>
+            </DialogHeader>
+            <div className="py-2 text-gray-700">
+              Bạn có chắc chắn muốn hủy đăng ký hiến máu này?
+            </div>
+            <DialogFooter>
+              <button
+                className="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 mr-2"
+                onClick={handleCloseDialog}
+                type="button"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600 font-semibold"
+                onClick={handleConfirmCancel}
+                type="button"
+                ref={confirmButtonRef}
+              >
+                Xác nhận hủy
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
 }
 
-export default BloodDonationHistoryPage; 
+export default BloodDonationHistoryPage;

@@ -32,12 +32,10 @@ function NavBar() {
           {[
             { name: "Trang chủ", link: "/" },
             { name: "Hiến máu", link: "/blood-donation" },
-            { name: "Nhóm máu", link: "/blood-types" },
-            { name: "Khẩn cấp", link: "/emergency" },
+            { name: "Câu hỏi thường gặp", link: "/faq" },
             { name: "Đăng nhập", link: "/login" },
           ].map((item) => {
             if (item.name === "Đăng nhập" && user) {
-              console.log(user);
               return null;
             }
             return (
@@ -52,7 +50,7 @@ function NavBar() {
           })}
           {user && (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger>
                 <Button variant={"secondary"}>{user.fullName}</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>

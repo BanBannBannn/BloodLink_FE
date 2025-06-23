@@ -14,23 +14,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Droplet,
-  Edit,
-} from "lucide-react";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 import type { LucideIcon } from "lucide-react";
+import {
+  Calendar,
+  Edit,
+  Mail,
+  MapPin,
+  Phone,
+  User
+} from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
-import { useAuth } from "@/contexts/AuthContext";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
@@ -53,9 +52,8 @@ function ProfilePage() {
       fullName: user?.fullName,
       email: user?.email,
       phone: user?.phoneNo,
-      address: user?.address,
+      address: user?.addresss,
       dateOfBirth: "2000-01-01",
-      bloodType: "A+",
     },
   });
 
@@ -170,12 +168,6 @@ function ProfilePage() {
                     }
                   )}
                   name="dateOfBirth"
-                />
-                <InfoRow
-                  icon={Droplet}
-                  label="Nhóm máu"
-                  value={form.getValues("bloodType")}
-                  name="bloodType"
                 />
 
                 {isEditing && (

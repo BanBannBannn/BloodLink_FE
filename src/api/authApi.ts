@@ -30,3 +30,8 @@ export const loginApi = async (user: { email: string; password: string }) => {
   });
   return response.data;
 };
+
+export const loginWithGoogleApi = async (token: string) => {
+  const response = await apiClient.post("/auth/firebase", token);
+  return response;
+};
