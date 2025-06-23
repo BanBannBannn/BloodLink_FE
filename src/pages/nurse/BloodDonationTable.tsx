@@ -1,22 +1,28 @@
 import React, { useState } from "react";
 import useBloodDonation from "@/hooks/useBloodDonation";
 import { Button } from "@/components/ui/button";
-import axiosInstance from "@/lib/axios";
-import { MoreHorizontal } from "lucide-react";
-import { Select,SelectTrigger,SelectValue,SelectContent,SelectItem, } from "@/components/ui/select";
+import apiClient from "@/api/apiClient"; 
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-
+import { MoreHorizontal } from "lucide-react";
 
 export default function BloodDonationTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
   const { data, loading, error, totalRecords, refresh } = useBloodDonation({});
 
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
 
   const handleUpdateStatus = async (id: string, status: number) => {
     try {
-      await axiosInstance.put(`/api/blood-donations/${id}/status?status=${status}`);
+      await apiClient.put(`/api/blood-donations/${id}/status?status=${status}`);
       alert("Cập nhật trạng thái thành công!");
       refresh();
     } catch (err: any) {
@@ -44,18 +50,18 @@ export default function BloodDonationTable() {
         <Input
           placeholder="Tìm theo tên..."
           value={searchQuery}
-          onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setSearchQuery(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-48"
         />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-38">
+          <SelectTrigger className="w-40">
             <SelectValue placeholder="Lọc theo trạng thái" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value="0">Đang chờ</SelectItem>
-            <SelectItem value="1">Đã duyệt</SelectItem>
-            <SelectItem value="2">Từ chối</SelectItem>
+            <SelectItem value="0">Đang hiến máu</SelectItem>
+            <SelectItem value="1">Đã hiến máu</SelectItem>
+            <SelectItem value="2">Hủy</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -89,9 +95,14 @@ export default function BloodDonationTable() {
                     {new Date(item.donationDate).toLocaleDateString("vi-VN")}
                   </td>
                   <td className="p-2">{item.volume} ml</td>
-                  <td className={`p-2 capitalize ${item.status === 0 ? "text-yellow-600" :
-                    item.status === 1 ? "text-green-600" : "text-red-600"
-                    }`}>
+                  <td
+                    className={`p-2 capitalize ${item.status === 0
+                        ? "text-yellow-600"
+                        : item.status === 1
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                  >
                     {item.status === 0
                       ? "Đang hiến máu"
                       : item.status === 1
@@ -132,12 +143,29 @@ export default function BloodDonationTable() {
                   <tr className="bg-gray-50 text-left">
                     <td colSpan={7} className="p-4">
                       <div>
-                        <p><strong>Họ tên:</strong> {item.bloodDonationRequest?.fullName}</p>
-                        <p><strong>Giới tính:</strong> {item.bloodDonationRequest?.gender ? "Nam" : "Nữ"}</p>
-                        <p><strong>Tuổi:</strong> {item.bloodDonationRequest?.healthCheckForm?.age || "-"}</p>
-                        <p><strong>Email:</strong> {item.bloodDonationRequest?.email}</p>
-                        <p><strong>Địa chỉ:</strong> {item.bloodDonationRequest?.addresss}</p>
-                        <p><strong>Mô tả:</strong> {item.description}</p>
+                        <p>
+                          <strong>Họ tên:</strong>{" "}
+                          {item.bloodDonationRequest?.fullName}
+                        </p>
+                        <p>
+                          <strong>Giới tính:</strong>{" "}
+                          {item.bloodDonationRequest?.gender ? "Nam" : "Nữ"}
+                        </p>
+                        <p>
+                          <strong>Tuổi:</strong>{" "}
+                          {item.bloodDonationRequest?.healthCheckForm?.age || "-"}
+                        </p>
+                        <p>
+                          <strong>Email:</strong>{" "}
+                          {item.bloodDonationRequest?.email}
+                        </p>
+                        <p>
+                          <strong>Địa chỉ:</strong>{" "}
+                          {item.bloodDonationRequest?.addresss}
+                        </p>
+                        <p>
+                          <strong>Mô tả:</strong> {item.description}
+                        </p>
                       </div>
                     </td>
                   </tr>

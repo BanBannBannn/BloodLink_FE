@@ -1,13 +1,24 @@
-import { useEffect, useState } from "react";
-import axiosInstance from "@/lib/axios";
+import { useEffect, useState, useMemo } from "react";
+import apiClient from "@/api/apiClient";
+// import { ReactNode } from "react";
 
 export interface BloodDonation {
+  bloodDonationRequest: {
+    fullName: string;
+    gender: boolean;
+    email?: string;
+    addresss?: string;
+    healthCheckForm?: {
+      age?: number;
+    };
+  };
+  donationDate: string | number | Date;
+  volume: number;
+  description: string;
   id: string;
-  fullName: string;
   bloodType: number;
   status: number;
   reasonReject?: string;
-  donatedDateRequest: string;
   healthCheckForm?: {
     volumeBloodDonated: number;
   };
@@ -27,26 +38,37 @@ export default function useBloodDonation(params: FetchParams = {}) {
   const [error, setError] = useState<string | null>(null);
   const [totalRecords, setTotalRecords] = useState(0);
 
+  const queryParams = useMemo(() => ({ ...params }), [JSON.stringify(params)]);
+
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axiosInstance.get("/api/blood-donations/search", {
-          params,
+        const response = await apiClient.get("/api/blood-donations/search", {
+          params: queryParams,
+          signal: controller.signal,
         });
         setData(response.data.records || []);
         setTotalRecords(response.data.totalRecords || 0);
       } catch (err: any) {
-        console.error("Fetch blood donations failed", err);
-        setError(err.message || "Lỗi khi tải dữ liệu");
+        if (err.name !== "CanceledError") {
+          console.error("Fetch blood donations failed", err);
+          setError(err.message || "Lỗi khi tải dữ liệu");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [JSON.stringify(params)]); 
 
-  return { data, loading, error, totalRecords };
+    return () => {
+      controller.abort();
+    };
+  }, [queryParams]);
+
+  return { data, loading, error, totalRecords, refresh: () => setData([...data]) };
 }

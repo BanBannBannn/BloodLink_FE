@@ -12,24 +12,16 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
     const existing = request.healthCheckForm;
     const isViewMode = request.status !== 0 || !!existing;
 
-    const [age, setAge] = useState(existing?.age || 0);
-    const [weight, setWeight] = useState(existing?.weight || 0);
-    const [volume, setVolume] = useState(existing?.volumeBloodDonated || 0);
-    const [hemoglobin, setHemoglobin] = useState(existing?.hemoglobin || 0);
+    const [age, setAge] = useState(existing?.age );
+    const [weight, setWeight] = useState(existing?.weight );
+    const [volume, setVolume] = useState(existing?.volumeBloodDonated || 250);
+    const [hemoglobin, setHemoglobin] = useState(existing?.hemoglobin );
 
-    const [isInfectiousDisease, setIsInfectiousDisease] = useState(
-        existing?.isInfectiousDisease || false
-    );
+    const [isInfectiousDisease, setIsInfectiousDisease] = useState(existing?.isInfectiousDisease || false);
     const [isPregnant, setIsPregnant] = useState(existing?.isPregnant || false);
-    const [isUsedAlcoholRecently, setIsUsedAlcoholRecently] = useState(
-        existing?.isUsedAlcoholRecently || false
-    );
-    const [hasChronicDisease, setHasChronicDisease] = useState(
-        existing?.hasChronicDisease || false
-    );
-    const [hasUnsafeSexualBehaviourOrSameSexSexualContact] = useState(
-        existing?.hasUnsafeSexualBehaviourOrSameSexSexualContact || false
-    );
+    const [isUsedAlcoholRecently, setIsUsedAlcoholRecently] = useState(existing?.isUsedAlcoholRecently || false);
+    const [hasChronicDisease, setHasChronicDisease] = useState(existing?.hasChronicDisease || false);
+    const [hasUnsafeSexualBehaviourOrSameSexSexualContact] = useState(existing?.hasUnsafeSexualBehaviourOrSameSexSexualContact || false);
     const [note, setNote] = useState(existing?.note || "");
 
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
@@ -83,17 +75,17 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
                     </Alert>
                 )}
 
+                {/* Tuổi, cân nặng, huyết sắc tố */}
                 {[{ label: "Tuổi", value: age, set: setAge, key: "age" },
                 { label: "Cân nặng (kg)", value: weight, set: setWeight, key: "weight" },
-                { label: "Thể tích máu (ml)", value: volume, set: setVolume, key: "volumeBloodDonated" },
                 { label: "Huyết sắc tố (g/l)", value: hemoglobin, set: setHemoglobin, key: "hemoglobin" }].map(({ label, value, set, key }) => (
-                    <div className="mb-2" key={label}>
+                    <div className="mb-2" key={key}>
                         <label>{label}:</label>
                         <input
-                            type="number"
+                            type="string"
                             value={value}
                             disabled={disabled}
-                            onChange={(e) => set(parseInt(e.target.value))}
+                            onChange={(e) => set(parseInt(e.target.value) || 0)}
                             className="border rounded w-full px-2 py-1 mt-1"
                         />
                         {fieldErrors[key] && (
@@ -102,6 +94,27 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
                     </div>
                 ))}
 
+                {/* Thể tích máu */}
+                <div className="mb-2">
+                    <label>Thể tích máu (ml):</label>
+                    <select
+                        value={volume}
+                        onChange={(e) => setVolume(parseInt(e.target.value))}
+                        disabled={disabled}
+                        className="border rounded w-full px-2 py-1 mt-1"
+                    >
+                        {[250, 350, 450].map((val) => (
+                            <option key={val} value={val}>
+                                {val}
+                            </option>
+                        ))}
+                    </select>
+                    {fieldErrors["volumeBloodDonated"] && (
+                        <p className="text-red-500 text-sm mt-1">{fieldErrors["volumeBloodDonated"]}</p>
+                    )}
+                </div>
+
+                {/* Checkbox */}
                 {[{ label: "Có bệnh truyền nhiễm", value: isInfectiousDisease, set: setIsInfectiousDisease },
                 { label: "Mang thai", value: isPregnant, set: setIsPregnant },
                 { label: "Dùng rượu gần đây", value: isUsedAlcoholRecently, set: setIsUsedAlcoholRecently },
@@ -119,6 +132,7 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
                     </div>
                 ))}
 
+                {/* Ghi chú */}
                 <div className="mb-2">
                     <label>Ghi chú:</label>
                     <textarea
@@ -130,6 +144,7 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
                     />
                 </div>
 
+                {/* Action buttons */}
                 <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={onClose}>
                         Đóng
