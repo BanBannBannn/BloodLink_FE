@@ -1,77 +1,71 @@
-import React from "react";
-
-interface BloodRaw {
-  id: number;
-  donorName: string;
-  bloodGroup: string;
-  volume: number;
-  unit: string;
-  donationDate: string;
-  processed: boolean;
-}
-
-const mockData: BloodRaw[] = [
-  {
-    id: 1,
-    donorName: " Aaaa",
-    bloodGroup: "A+",
-    volume: 350,
-    unit: "ml",
-    donationDate: "2025-06-02",
-    processed: false,
-  },
-  {
-    id: 2,
-    donorName: " Bbbb",
-    bloodGroup: "O-",
-    volume: 400,
-    unit: "ml",
-    donationDate: "2025-06-01",
-    processed: true,
-  },
-  {
-    id: 3,
-    donorName: " Cccc",
-    bloodGroup: "B+",
-    volume: 300,
-    unit: "ml",
-    donationDate: "2025-06-03",
-    processed: false,
-  },
-];
+import React, { useState } from "react";
+import useBloodHistory from "@/hooks/useBloodHistory";
+import BloodCheckFormModal from "@/pages/bloodStorage/BloodCheckFormModal";
 
 export default function BloodRawTable() {
+  const { data, loading, error, refresh } = useBloodHistory();
+  const [selectedDonation, setSelectedDonation] = useState<any | null>(null);
+  const bloodTypeMap = ["O", "A", "B", "AB"];
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Danh sách máu thô</h1>
-      <table className="w-full border">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="p-2">Mã đơn vị máu</th>
-            <th className="p-2">Người hiến máu</th>
-            <th className="p-2">Nhóm máu</th>
-            <th className="p-2">Thể tích</th>
-            <th className="p-2">Ngày hiến</th>
-            <th className="p-2">Trạng thái chế phẩm</th>
-          </tr>
-        </thead>
-        <tbody>
-          {mockData.map((blood) => (
-            <tr key={blood.id} className="border-t text-center">
-              <td className="p-2">{blood.id}</td>
-              <td className="p-2">{blood.donorName}</td>
-              <td className="p-2">{blood.bloodGroup}</td>
-              <td className="p-2">
-                {blood.volume} {blood.unit}
-              </td>
-              <td className="p-2">{blood.donationDate}</td>
-              <td className={`p-2 ${blood.processed ? "text-green-600" : "text-yellow-600"}`}>
-                {blood.processed ? "Đã chế phẩm" : "Chưa chế phẩm"}
-              </td>
+      <h1 className="text-2xl font-bold mb-4">Lịch sử nhập máu</h1>
+
+      {loading ? (
+        <p>Đang tải dữ liệu...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <table className="w-full border">
+          <thead className="bg-gray-200">
+            <tr>
+              <th className="p-2">STT</th>
+              <th className="p-2">Tên</th>
+              <th className="p-2">Nhóm máu</th>
+              <th className="p-2">Ngày yêu cầu</th>
+              <th className="p-2">Thể tích</th>
+              <th className="p-2">Trạng thái</th>
+              <th className="p-2">Ghi chú</th>
+              <th className="p-2">Hành động</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((entry, idx) => (
+              <tr key={entry.id} className="border-t text-center">
+                <td className="p-2">{idx + 1}</td>
+                <td className="p-2">{entry.bloodDonationRequest?.fullName}</td>
+                <td className="p-2">{bloodTypeMap[entry.bloodType]}</td>
+                <td className="p-2">{new Date(entry.donationDate).toLocaleDateString("vi-VN")}</td>
+                <td className="p-2">{entry.volume} ml</td>
+                <td className={`p-2 ${entry.status === 1 ? "text-green-600" : "text-yellow-600"}`}>
+                  {entry.status === 1 ? "Đã nhập" : "Đang xử lý"}
+                </td>
+                <td className="p-2">{entry.description || "-"}</td>
+                <td className="p-2">
+                  {entry.status === 1 && (
+                    <button
+                      onClick={() => setSelectedDonation(entry)}
+                      className="text-blue-500 border border-blue-500 px-2 py-1 rounded hover:bg-blue-100"
+                    >
+                      Điền form
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {selectedDonation && (
+        <BloodCheckFormModal
+          donation={selectedDonation}
+          onClose={() => {
+            setSelectedDonation(null);
+            refresh();
+          }}
+        />
+      )}
     </div>
   );
 }
