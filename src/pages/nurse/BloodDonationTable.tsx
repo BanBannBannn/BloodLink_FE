@@ -22,7 +22,7 @@ export default function BloodDonationTable() {
 
   const handleUpdateStatus = async (id: string, status: number) => {
     try {
-      await apiClient.put(`/api/blood-donations/${id}/status?status=${status}`);
+      await apiClient.put(`/blood-donations/${id}/status?status=${status}`);
       alert("Cập nhật trạng thái thành công!");
       refresh();
     } catch (err: any) {

@@ -21,7 +21,7 @@ export default function useBloodHistory() {
     const fetch = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get("/api/blood-donations/search");
+        const res = await axiosInstance.get("/blood-donations/search");
         setData(res.data.records || []);
       } catch (err: any) {
         setError(err.message || "Lỗi khi tải dữ liệu");

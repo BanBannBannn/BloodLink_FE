@@ -31,7 +31,7 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
         setFieldErrors({});
         setAlertMessage(null);
         try {
-            await axiosInstance.post("/api/health-check-form", {
+            await axiosInstance.post("/health-check-form", {
                 age,
                 weight,
                 volumeBloodDonated: volume,

@@ -47,7 +47,7 @@ export default function useBloodDonation(params: FetchParams = {}) {
       setLoading(true);
       setError(null);
       try {
-        const response = await apiClient.get("/api/blood-donations/search", {
+        const response = await apiClient.get("/blood-donations/search", {
           params: queryParams,
           signal: controller.signal,
         });

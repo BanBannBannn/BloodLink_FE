@@ -34,7 +34,7 @@ export default function BloodDonationRequestsTable() {
 
     try {
       await apiClient.put(
-        `/api/blood-donation-requests/status/${id}?status=2&rejectNote=${encodeURIComponent(
+        `/blood-donation-requests/status/${id}?status=2&rejectNote=${encodeURIComponent(
           rejectNote.trim()
         )}`
       );
@@ -46,7 +46,7 @@ export default function BloodDonationRequestsTable() {
 
   const handleApprove = async (id: string) => {
     try {
-      await apiClient.put(`/api/blood-donation-requests/status/${id}?status=1`);
+      await apiClient.put(`/blood-donation-requests/status/${id}?status=1`);
       refresh();
     } catch {
       setAlertMessage("Cập nhật trạng thái thất bại!");

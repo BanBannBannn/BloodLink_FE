@@ -25,7 +25,7 @@ export default function useBloodDonationRequests() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient.get("/api/blood-donation-requests/search");
+      const response = await apiClient.get("/blood-donation-requests/search");
       setData(response.data.records || []);
     } catch (err: any) {
       setError(err.message || "Lỗi khi tải dữ liệu");
