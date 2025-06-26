@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,12 @@ import { useAuth } from "@/contexts/AuthContext";
 
 function NavBar() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <nav className="bg-white w-full shadow-lg px-4 z-50">
@@ -71,7 +77,7 @@ function NavBar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="flex items-center gap-2 cursor-pointer"
                   >
                     <LogOut />

@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { setToken, removeToken, getToken } from "../api/apiClient";
 import { getUserInfo } from "@/api/userApi";
+import { createContext, useContext, useEffect, useState } from "react";
+import { getToken, removeToken, setToken } from "../api/apiClient";
 
 type User = {
   id: string;
@@ -13,19 +12,21 @@ type User = {
   identityId: string;
   phoneNo: string;
   status: string;
+  roleName: string;
 };
 
 type AuthContextType = {
   user: User | null;
   login: (user: User, token: string) => void;
   logout: () => void;
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const login = (user: User, token: string) => {
     setUser(user);
@@ -37,7 +38,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     removeToken();
     localStorage.removeItem("userId");
-    navigate("/login");
   };
 
   useEffect(() => {
@@ -45,19 +45,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const token = getToken();
         const userId = localStorage.getItem("userId");
-        if (token && userId) {
-          const response = await getUserInfo(userId);
+        
+        if (!token || !userId) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await getUserInfo(userId);
+        if (response.data) {
           setUser(response.data);
+        } else {
+          // If no user data, clear the stored credentials
+          logout();
         }
       } catch (error) {
-        console.log(error);
+        console.error("Auth error:", error);
+        // On error, clear the stored credentials
+        logout();
+      } finally {
+        setLoading(false);
       }
     };
+
     getUser();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

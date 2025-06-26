@@ -24,7 +24,9 @@ import NurseDashboard from "@/pages/nurse/Dashboard";
 import NurseLayout from "@/layouts/NurseLayout";
 
 import { createBrowserRouter } from "react-router-dom";
-
+import NurseManagement from "@/pages/admin/NurseManagement";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Unauthorized from "@/pages/public/Unauthorized";
 
 export const router = createBrowserRouter([
   {
@@ -64,10 +66,15 @@ export const router = createBrowserRouter([
 
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
-      { path: "admin-dashboard", element: <AdminDashboard /> },
+      { index: true, element: <AdminDashboard /> },
       { path: "accounts", element: <AccountManagement /> },
+      { path: "nurse-management", element: <NurseManagement /> },
     ],
   },
 
@@ -85,12 +92,20 @@ export const router = createBrowserRouter([
 
   {
     path: "/nurse",
-    element: <NurseLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={["NURSE"]}>
+        <NurseLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { path: "nurse-dashboard", element: <NurseDashboard /> },
-      { path: "blood-donation-table", element: <BloodDonationScheduleTable/> },
-      { path: "blood-requests-table", element: <BloodDonationRequestsTable /> }
+      { path: "blood-donation-table", element: <BloodDonationScheduleTable /> },
+      { path: "blood-requests-table", element: <BloodDonationRequestsTable /> },
     ],
-    
-  }
+  },
+
+  {
+    path: "/unauthorized",
+    element: <Unauthorized />,
+  },
 ]);
