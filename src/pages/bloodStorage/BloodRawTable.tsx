@@ -7,6 +7,8 @@ export default function BloodRawTable() {
   const [selectedDonation, setSelectedDonation] = useState<any | null>(null);
   const bloodTypeMap = ["O", "A", "B", "AB"];
 
+  const filteredData = data.filter((entry) => entry.status === 1 || entry.status === 3);
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Lịch sử nhập máu</h1>
@@ -30,15 +32,18 @@ export default function BloodRawTable() {
             </tr>
           </thead>
           <tbody>
-            {data.map((entry, idx) => (
+            {filteredData.map((entry, idx) => (
               <tr key={entry.id} className="border-t text-center">
                 <td className="p-2">{idx + 1}</td>
                 <td className="p-2">{entry.bloodDonationRequest?.fullName}</td>
                 <td className="p-2">{bloodTypeMap[entry.bloodType]}</td>
                 <td className="p-2">{new Date(entry.donationDate).toLocaleDateString("vi-VN")}</td>
                 <td className="p-2">{entry.volume} ml</td>
-                <td className={`p-2 ${entry.status === 1 ? "text-green-600" : "text-yellow-600"}`}>
-                  {entry.status === 1 ? "Đã nhập" : "Đang xử lý"}
+                <td
+                  className={`p-2 ${entry.status === 3 ? "text-green-600" : "text-yellow-600"
+                    }`}
+                >
+                  {entry.status === 3 ? "Đã kiểm tra" : "Chưa kiểm tra"}
                 </td>
                 <td className="p-2">{entry.description || "-"}</td>
                 <td className="p-2">

@@ -1,36 +1,48 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 
-export interface BloodHistoryRecord {
-  [x: string]: any;
+export interface BloodHistoryEntry {
   id: string;
-  donationDate: string;
+  bloodDonationRequest?: {
+    fullName: string;
+  };
   bloodType: number;
+  donationDate: string;
   volume: number;
-  fullName: string;
   status: number;
   description?: string;
 }
 
 export default function useBloodHistory() {
-  const [data, setData] = useState<BloodHistoryRecord[]>([]);
+  const [data, setData] = useState<BloodHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axiosInstance.get("/blood-donations/search", {
+        params: {
+          statuses: "1,3", 
+        },
+      });
+      setData(response.data.records || []);
+    } catch (err: any) {
+      setError(err.message || "Lỗi khi tải dữ liệu");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
-      try {
-        const res = await axiosInstance.get("/blood-donations/search");
-        setData(res.data.records || []);
-      } catch (err: any) {
-        setError(err.message || "Lỗi khi tải dữ liệu");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
+    fetchData();
   }, []);
 
-  return { data, loading,refresh: () => setData([...data]), error };
+  return {
+    data,
+    loading,
+    error,
+    refresh: fetchData,
+  };
 }
