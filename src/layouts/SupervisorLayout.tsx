@@ -11,10 +11,10 @@ export default function SupervisorLayout() {
           <Link to="/supervisor" className="block p-2 rounded hover:bg-gray-100">
             Tổng quan
           </Link>
-          <Link to="/supervisor/blood-raw" className="block p-2 rounded hover:bg-gray-100">
+          <Link to="/supervisor/blood-donation-history" className="block p-2 rounded hover:bg-gray-100">
             Lịch sử nhận máu
           </Link>
-          <Link to="/supervisor/blood-components" className="block p-2 rounded hover:bg-gray-100">
+          <Link to="/supervisor/blood-sotage" className="block p-2 rounded hover:bg-gray-100">
             Kho máu
           </Link>
           <Link to="/supervisor/history" className="block p-2 rounded hover:bg-gray-100">
