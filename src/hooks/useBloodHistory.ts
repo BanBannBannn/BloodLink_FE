@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 
 export interface BloodHistoryEntry {
+  code: string;
   id: string;
   bloodDonationRequest?: {
     fullName: string;

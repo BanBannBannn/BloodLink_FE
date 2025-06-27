@@ -13,6 +13,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { bloodTypes } from "@/constants/constants";
 
 export default function BloodDonationRequestsTable() {
   const { data, loading, error, refresh } = useBloodDonationRequests();
@@ -119,7 +120,7 @@ export default function BloodDonationRequestsTable() {
                 <tr className="border-t text-center">
                   <td className="p-2">{index + 1}</td>
                   <td className="p-2">{item.fullName}</td>
-                  <td className="p-2">{["A", "B", "AB", "O"][item.bloodType]}</td>
+                  <td className="p-2">{bloodTypes[item.bloodType]}</td>
                   <td className="p-2">
                     {new Date(item.donatedDateRequest).toLocaleDateString("vi-VN")}
                   </td>
