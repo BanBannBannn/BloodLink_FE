@@ -9,7 +9,7 @@ import FAQ from "@/pages/public/FAQ";
 
 import AdminLayout from "@/layouts/AdminLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
-import AccountManagement from "@/pages/admin/AccountManagement";
+import AccountManagement from "@/pages/admin/MemberManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
 import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
@@ -27,6 +27,7 @@ import { createBrowserRouter } from "react-router-dom";
 import NurseManagement from "@/pages/admin/NurseManagement";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Unauthorized from "@/pages/public/Unauthorized";
+import SupervisorManagement from "@/pages/admin/SupervisorManagement";
 
 export const router = createBrowserRouter([
   {
@@ -72,9 +73,10 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <AdminDashboard /> },
-      { path: "accounts", element: <AccountManagement /> },
+      { path: "admin-dashboard", element: <AdminDashboard /> },
+      { path: "member-management", element: <AccountManagement /> },
       { path: "nurse-management", element: <NurseManagement /> },
+      { path: "supervisor-management", element: <SupervisorManagement /> },
     ],
   },
 

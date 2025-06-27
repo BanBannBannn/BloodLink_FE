@@ -67,9 +67,9 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-const ROLE_NURSE_ID = import.meta.env.VITE_ROLE_NURSE;
+const ROLE_SUPERVISOR_ID = import.meta.env.VITE_ROLE_SUPERVISOR;
 
-export default function NurseManagement() {
+export default function SupervisorManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -95,11 +95,11 @@ export default function NurseManagement() {
     const getAllUser = async () => {
       try {
         const response = await getAllAccount();
-        const listNurse = response.data.records.filter(
-          (user: User) => user.roleId === ROLE_NURSE_ID
+        const listSupervisor = response.data.records.filter(
+          (user: User) => user.roleId === ROLE_SUPERVISOR_ID
         );
-        setUsers(listNurse);
-        setFilteredUsers(listNurse);
+        setUsers(listSupervisor);
+        setFilteredUsers(listSupervisor);
       } catch (error) {
         console.log(error);
       }
@@ -119,25 +119,25 @@ export default function NurseManagement() {
   return (
     <div className="p-6 h-full flex flex-col flex-1 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
-          Quản lí ý tá
+      <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
+          Quản lí giám sát
         </h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger>
             <Button asChild>
               <div className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4" />
-                Thêm y tá
+                Thêm giám sát
               </div>
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader className="!flex-row justify-between items-center">
-              <DialogTitle>Thêm y tá mới</DialogTitle>
+              <DialogTitle>Thêm giám sát mới</DialogTitle>
               <X className="cursor-pointer" onClick={() => setOpen(false)} />
             </DialogHeader>
             <AddUserForm
-              roleId={ROLE_NURSE_ID}
+              roleId={ROLE_SUPERVISOR_ID}
               onSuccess={handleAddNurseSuccess}
             />
           </DialogContent>
@@ -147,7 +147,7 @@ export default function NurseManagement() {
       <Card className="shadow-lg rounded-xl flex-1">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="text-xl font-semibold">
-            Danh sách y tá
+            Danh sách giám sát
           </CardTitle>
           <div className="flex items-center space-x-2">
             <div className="relative">

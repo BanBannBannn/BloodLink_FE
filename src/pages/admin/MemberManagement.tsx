@@ -22,21 +22,11 @@ import {
   LockKeyhole,
   Search,
   SquarePen,
-  Trash2,
-  UserPlus,
-  X,
+  Trash2
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import AddUserForm from "@/components/AddUserForm";
 
-export interface User {
+interface User {
   addresss: string;
   backUrlIdentity: string;
   bloodGroupId: string;
@@ -67,39 +57,22 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-const ROLE_NURSE_ID = import.meta.env.VITE_ROLE_NURSE;
+const ROLE_MEMBER_ID = import.meta.env.VITE_ROLE_MEMBER;
 
-export default function NurseManagement() {
+export default function AccountManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [open, setOpen] = useState(false);
-
-  const handleAddNurseSuccess = (newUser: User) => {
-    setUsers((prev) => [...prev, newUser]);
-    setFilteredUsers((prev) => {
-      if (
-        searchTerm === "" ||
-        Object.values(newUser).some((value) =>
-          value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      ) {
-        return [...prev, newUser];
-      }
-      return prev;
-    });
-    setOpen(false);
-  };
 
   useEffect(() => {
     const getAllUser = async () => {
       try {
         const response = await getAllAccount();
-        const listNurse = response.data.records.filter(
-          (user: User) => user.roleId === ROLE_NURSE_ID
+        const listMember = response.data.records.filter(
+          (user: User) => user.roleId === ROLE_MEMBER_ID
         );
-        setUsers(listNurse);
-        setFilteredUsers(listNurse);
+        setUsers(listMember);
+        setFilteredUsers(listMember);
       } catch (error) {
         console.log(error);
       }
@@ -118,42 +91,20 @@ export default function NurseManagement() {
 
   return (
     <div className="p-6 h-full flex flex-col flex-1 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
-          Quản lí ý tá
-        </h1>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger>
-            <Button asChild>
-              <div className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Thêm y tá
-              </div>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader className="!flex-row justify-between items-center">
-              <DialogTitle>Thêm y tá mới</DialogTitle>
-              <X className="cursor-pointer" onClick={() => setOpen(false)} />
-            </DialogHeader>
-            <AddUserForm
-              roleId={ROLE_NURSE_ID}
-              onSuccess={handleAddNurseSuccess}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+      <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
+        Quản lí người dùng
+      </h1>
 
       <Card className="shadow-lg rounded-xl flex-1">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="text-xl font-semibold">
-            Danh sách y tá
+            Danh sách người dùng
           </CardTitle>
           <div className="flex items-center space-x-2">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Tìm kiếm..."
+                placeholder="Search users..."
                 className="pl-8 w-[300px]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -165,14 +116,12 @@ export default function NurseManagement() {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="font-semibold">Họ và tên</TableHead>
+                <TableHead className="font-semibold">Full Name</TableHead>
                 <TableHead className="font-semibold">Email</TableHead>
-                <TableHead className="font-semibold">Số điện thoại</TableHead>
-                <TableHead className="font-semibold">
-                  Căn cước công dân
-                </TableHead>
-                <TableHead className="font-semibold">Địa chỉ</TableHead>
-                <TableHead className="font-semibold">trạng thái</TableHead>
+                <TableHead className="font-semibold">Phone</TableHead>
+                <TableHead className="font-semibold">ID Card</TableHead>
+                <TableHead className="font-semibold">Address</TableHead>
+                <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>

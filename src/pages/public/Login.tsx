@@ -52,10 +52,10 @@ function LoginPage() {
       setIsLoading(false);
       switch (response.data.user.roleName) {
         case "ADMIN":
-          navigate("/admin");
+          navigate("/admin/admin-dashboard");
           break;
         case "NURSE":
-          navigate("/nurse");
+          navigate("/nurse/nurse-dashboard");
           break;
         default:
           navigate("/");
