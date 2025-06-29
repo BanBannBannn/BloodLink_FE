@@ -46,26 +46,26 @@ export default function SupervisorLayout() {
               Tổng quan
             </Link>
             <Link
-              to="/supervisor/blood-raw"
+              to="/supervisor/blood-donation-history"
               className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-150 hover:bg-gray-100 ${
-                location.pathname === "/supervisor/blood-raw"
+                location.pathname === "/supervisor/blood-donation-history"
                   ? "bg-blue-100 text-blue-700 font-semibold"
                   : "text-gray-700"
               }`}
             >
               <ArrowsUpDownIcon className="w-5 h-5" />
-              Máu thô
+              Lịch sử hiến máu
             </Link>
             <Link
-              to="/supervisor/blood-components"
+              to="/supervisor/blood-sotage"
               className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-150 hover:bg-gray-100 ${
-                location.pathname === "/supervisor/blood-components"
+                location.pathname === "/supervisor/blood-sotage"
                   ? "bg-blue-100 text-blue-700 font-semibold"
                   : "text-gray-700"
               }`}
             >
               <ClipboardDocumentListIcon className="w-5 h-5" />
-              Máu chế phẩm
+              Kho máu
             </Link>
             <Link
               to="/supervisor/history"
