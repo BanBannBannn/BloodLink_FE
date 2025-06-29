@@ -9,7 +9,7 @@ import FAQ from "@/pages/public/FAQ";
 
 import AdminLayout from "@/layouts/AdminLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
-import AccountManagement from "@/pages/admin/AccountManagement";
+import AccountManagement from "@/pages/admin/MemberManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
 import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
@@ -24,7 +24,10 @@ import NurseDashboard from "@/pages/nurse/Dashboard";
 import NurseLayout from "@/layouts/NurseLayout";
 
 import { createBrowserRouter } from "react-router-dom";
-
+import NurseManagement from "@/pages/admin/NurseManagement";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Unauthorized from "@/pages/public/Unauthorized";
+import SupervisorManagement from "@/pages/admin/SupervisorManagement";
 
 export const router = createBrowserRouter([
   {
@@ -64,10 +67,16 @@ export const router = createBrowserRouter([
 
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={["ADMIN"]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { path: "admin-dashboard", element: <AdminDashboard /> },
-      { path: "accounts", element: <AccountManagement /> },
+      { path: "member-management", element: <AccountManagement /> },
+      { path: "nurse-management", element: <NurseManagement /> },
+      { path: "supervisor-management", element: <SupervisorManagement /> },
     ],
   },
 
@@ -85,12 +94,20 @@ export const router = createBrowserRouter([
 
   {
     path: "/nurse",
-    element: <NurseLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={["NURSE"]}>
+        <NurseLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { path: "nurse-dashboard", element: <NurseDashboard /> },
-      { path: "blood-donation-table", element: <BloodDonationScheduleTable/> },
-      { path: "blood-requests-table", element: <BloodDonationRequestsTable /> }
+      { path: "blood-donation-table", element: <BloodDonationScheduleTable /> },
+      { path: "blood-requests-table", element: <BloodDonationRequestsTable /> },
     ],
-    
-  }
+  },
+
+  {
+    path: "/unauthorized",
+    element: <Unauthorized />,
+  },
 ]);
