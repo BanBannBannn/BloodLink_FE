@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { MoreHorizontal } from "lucide-react";
+import { bloodTypes } from "@/constants/constants";
 
 export default function BloodDonationTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -90,7 +91,7 @@ export default function BloodDonationTable() {
                 <tr className="border-t text-center">
                   <td className="p-2">{index + 1}</td>
                   <td className="p-2">{item.bloodDonationRequest?.fullName}</td>
-                  <td className="p-2">{["O", "A", "B", "AB"][item.bloodType]}</td>
+                  <td className="p-2">{bloodTypes[item.bloodType]}</td>
                   <td className="p-2">
                     {new Date(item.donationDate).toLocaleDateString("vi-VN")}
                   </td>

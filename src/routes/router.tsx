@@ -13,7 +13,7 @@ import AccountManagement from "@/pages/admin/MemberManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
 import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
-import BloodRawTable from "@/pages/bloodStorage/BloodRawTable";
+import BloodRawTable from "@/pages/bloodStorage/BloodDonationHistory";
 import BloodComponentsTable from "@/pages/bloodStorage/BloodComponentsTable";
 import BloodHistoryTable from "@/pages/bloodStorage/BloodHistoryTable";
 import BloodRequestTable from "@/pages/bloodStorage/BloodRequestTable";
@@ -85,8 +85,8 @@ export const router = createBrowserRouter([
     element: <SupervisorLayout />,
     children: [
       { path: "supervisor-dashboard", element: <SupervisorDashboard /> },
-      { path: "blood-raw", element: <BloodRawTable /> },
-      { path: "blood-components", element: <BloodComponentsTable /> },
+      { path: "blood-donation-history", element: <BloodRawTable /> },
+      { path: "blood-sotage", element: <BloodComponentsTable /> },
       { path: "history", element: <BloodHistoryTable /> },
       { path: "blood-requests", element: <BloodRequestTable /> },
     ],
