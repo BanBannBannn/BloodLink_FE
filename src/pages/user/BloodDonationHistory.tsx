@@ -15,7 +15,7 @@ import {
   CalendarRange,
   Clock,
 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { bloodRequestHistory, cancelBloodRequest } from "@/api/userApi";
 import { bloodTypes, timeSlots } from "@/constants/constants";
@@ -27,6 +27,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
+import React from "react";
 
 const STATUS_MAP = [
   {
@@ -80,16 +81,11 @@ function BloodDonationHistoryPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [cancelId, setCancelId] = useState<string | null>(null);
   const toast = useToast();
-  const cancelButtonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
-  const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // Mở dialog xác nhận hủy
   const handleOpenCancelDialog = (id: string) => {
     setCancelId(id);
     setOpenDialog(true);
-    setTimeout(() => {
-      confirmButtonRef.current?.focus();
-    }, 0);
   };
 
   // Xác nhận hủy
@@ -109,22 +105,12 @@ function BloodDonationHistoryPage() {
       }
     }
     setOpenDialog(false);
-    if (cancelId) {
-      setTimeout(() => {
-        cancelButtonRefs.current[cancelId!]?.focus();
-      }, 0);
-    }
     setCancelId(null);
   };
 
   // Đóng dialog
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    if (cancelId) {
-      setTimeout(() => {
-        cancelButtonRefs.current[cancelId!]?.focus();
-      }, 0);
-    }
     setCancelId(null);
   };
 
@@ -177,6 +163,7 @@ function BloodDonationHistoryPage() {
                 <SelectItem value="1">Đã duyệt</SelectItem>
                 <SelectItem value="2">Đã từ chối</SelectItem>
                 <SelectItem value="3">Đã hủy</SelectItem>
+                <SelectItem value="4">Hoàn thành</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -193,7 +180,6 @@ function BloodDonationHistoryPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredHistory.map((donation) => {
               const statusInfo = STATUS_MAP[donation.status] || STATUS_MAP[0];
-              const StatusIcon = statusInfo.icon;
               return (
                 <Card
                   key={donation.id}
@@ -213,13 +199,12 @@ function BloodDonationHistoryPage() {
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${statusInfo.color} border border-opacity-30 border-red-300 group-hover:shadow-md transition-all`}
                         >
-                          <StatusIcon className="w-4 h-4" /> {statusInfo.label}
+                          {React.createElement(statusInfo.icon, { className: "w-4 h-4" })} {statusInfo.label}
                         </span>
                         {donation.status === 0 && (
                           <button
                             className="ml-2 px-3 py-1 text-xs font-semibold rounded bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 transition-all"
                             onClick={() => handleOpenCancelDialog(donation.id)}
-                            ref={el => { cancelButtonRefs.current[donation.id] = el; }}
                           >
                             Hủy
                           </button>
@@ -284,7 +269,6 @@ function BloodDonationHistoryPage() {
                 className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600 font-semibold"
                 onClick={handleConfirmCancel}
                 type="button"
-                ref={confirmButtonRef}
               >
                 Xác nhận hủy
               </button>

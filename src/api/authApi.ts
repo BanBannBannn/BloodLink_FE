@@ -28,7 +28,7 @@ export const loginApi = async (user: { email: string; password: string }) => {
     email: user.email,
     password: user.password,
   });
-  return response.data;
+  return response;
 };
 
 export const loginWithGoogleApi = async (token: string) => {
