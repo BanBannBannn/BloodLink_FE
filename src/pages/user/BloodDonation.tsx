@@ -1,7 +1,6 @@
 import { bloodDonationRequest } from "@/api/userApi";
 import { Stepper } from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -11,29 +10,30 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { bloodTypes, timeSlots } from "@/constants/constants";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format, isToday } from "date-fns";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui/dialog";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { cn } from "@/lib/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format, isToday } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "../../components/ui/dialog";
-import { bloodTypes, timeSlots } from "@/constants/constants";
+import { Calendar } from "@/components/ui/calendar";
 
 const Step1Schema = z.object({
   donatedDateRequest: z.string().nonempty("Vui lòng chọn ngày"),
@@ -108,6 +108,7 @@ function BloodDonation() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const navigate = useNavigate();
 
   const onSubmit = async (data: Step2Data) => {
@@ -178,49 +179,60 @@ function BloodDonation() {
                           <FormLabel className="text-lg font-semibold">
                             Ngày hiến máu
                           </FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
+                          <FormControl>
+                            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                              <PopoverTrigger className="!flex justify-start">
                                 <Button
+                                  type="button"
                                   variant="outline"
                                   className={cn(
                                     "w-full md:w-[240px] pl-3 text-left font-normal",
                                     !field.value && "text-muted-foreground"
                                   )}
+                                  id={field.name}
+                                  aria-describedby={field.name}
+                                  aria-invalid={
+                                    !!form1.formState.errors.donatedDateRequest
+                                  }
+                                  onClick={() => setCalendarOpen(true)}
                                 >
                                   {field.value ? (
-                                    format(new Date(field.value), "dd-MM-yyyy")
+                                    format(
+                                      new Date(field.value),
+                                      "dd-MM-yyyy"
+                                    )
                                   ) : (
                                     <span>Chọn ngày</span>
                                   )}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-full p-0"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                selected={
-                                  field.value
-                                    ? new Date(field.value)
-                                    : undefined
-                                }
-                                onSelect={(date) =>
-                                  field.onChange(date ? date.toISOString() : "")
-                                }
-                                disabled={(date) =>
-                                  date <
-                                  new Date(new Date().setHours(0, 0, 0, 0))
-                                }
-                                initialFocus
-                                className="rounded-md border"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={
+                                    field.value
+                                      ? new Date(field.value)
+                                      : undefined
+                                  }
+                                  onSelect={(date) => {
+                                    field.onChange(
+                                      date ? date.toISOString() : ""
+                                    );
+                                    setCalendarOpen(false);
+                                  }}
+                                  disabled={(date) =>
+                                    date <
+                                    new Date(new Date().setHours(0, 0, 0, 0))
+                                  }
+                                  className="rounded-md border"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </FormControl>
                         </FormItem>
                       )}
                     />

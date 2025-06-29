@@ -26,13 +26,18 @@ import NurseLayout from "@/layouts/NurseLayout";
 import { createBrowserRouter } from "react-router-dom";
 import NurseManagement from "@/pages/admin/NurseManagement";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PublicRoute from "@/components/PublicRoute";
 import Unauthorized from "@/pages/public/Unauthorized";
 import SupervisorManagement from "@/pages/admin/SupervisorManagement";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <UserLayout />,
+    element: (
+      <PublicRoute>
+        <UserLayout />
+      </PublicRoute>
+    ),
     children: [
       {
         index: true,
@@ -52,7 +57,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/blood-donation",
-        element: <BloodDonation />,
+        element: (
+          <ProtectedRoute allowedRoles={["MEMBER"]}>
+            <BloodDonation />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/profile",
@@ -82,7 +91,11 @@ export const router = createBrowserRouter([
 
   {
     path: "/supervisor",
-    element: <SupervisorLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={["SUPERVISOR"]}>
+        <SupervisorLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { path: "supervisor-dashboard", element: <SupervisorDashboard /> },
       { path: "blood-raw", element: <BloodRawTable /> },
