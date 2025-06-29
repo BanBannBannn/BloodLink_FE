@@ -3,8 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
-interface ProtectedRouteProps {
-  allowedRoles: string[];
+interface PublicRouteProps {
   children: React.ReactNode;
 }
 
@@ -19,14 +18,11 @@ const getDashboardPath = (role: string) => {
     case "MEMBER":
       return "/";
     default:
-      return "/unauthorized";
+      return "/";
   }
 };
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  allowedRoles,
-  children,
-}) => {
+const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -37,15 +33,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!allowedRoles.includes(user.roleName)) {
+  // If user is authenticated and has a staff role, redirect to their dashboard
+  if (user && ["ADMIN", "NURSE", "SUPERVISOR"].includes(user.roleName)) {
     return <Navigate to={getDashboardPath(user.roleName)} replace />;
   }
 
   return <>{children}</>;
 };
 
-export default ProtectedRoute;
+export default PublicRoute; 

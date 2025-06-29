@@ -79,7 +79,7 @@ function ProfilePage() {
       </div>
       <div className="flex-1">
         <p className="text-sm text-gray-500">{label}</p>
-        {isEditing ? (
+        {isEditing && name !== "email" ? (
           <FormField
             control={form.control}
             name={name}
