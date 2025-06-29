@@ -3,12 +3,15 @@ import apiClient from "@/api/apiClient";
 
 export interface BloodDonationRequest {
   id: string;
+  code: string;
   fullName: string;
   bloodType: number;
   status: number;
   donatedDateRequest: string;
   reasonReject?: string;
   gender?: boolean;
+  frontUrlIdentity?: string;
+  backUrlIdentity?: string;
   age?: number;
   identityId?: string;
   healthCheckForm?: {

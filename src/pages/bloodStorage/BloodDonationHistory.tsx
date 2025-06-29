@@ -137,7 +137,7 @@ export default function BloodRawTable() {
                               <img
                                 src={entry.bloodDonationRequest?.frontUrlIdentity}
                                 alt="CCCD mặt trước"
-                                className="w-full max-h-[300px] object-contain border rounded"
+                                className="w-full max-h-[250px] object-contain border rounded"
                               />
                               <p className="mt-1 text-sm text-center">CCCD mặt trước</p>
                             </div>
@@ -145,7 +145,7 @@ export default function BloodRawTable() {
                               <img
                                 src={entry.bloodDonationRequest?.backUrlIdentity}
                                 alt="CCCD mặt sau"
-                                className="w-full max-h-[300px] object-contain border rounded"
+                                className="w-full max-h-[250px] object-contain border rounded"
                               />
                               <p className="mt-1 text-sm text-center">CCCD mặt sau</p>
                             </div>
