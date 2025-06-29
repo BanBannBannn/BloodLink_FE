@@ -8,11 +8,12 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { bloodTypes, BloodStorageStatus } from "@/constants/constants";
+import { BloodStorageStatus } from "@/constants/constants";
 import { MoreHorizontal } from "lucide-react";
 
 export default function BloodStorageTable() {
   const [data, setData] = useState<any[]>([]);
+  const [bloodGroups, setBloodGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,11 +38,14 @@ export default function BloodStorageTable() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      setError(null);
       try {
-        const response = await axiosInstance.get("/blood-storage/search");
-        setData(response.data.records || []);
-      } catch (err: any) {
+        const [bloodStorageRes, bloodGroupRes] = await Promise.all([
+          axiosInstance.get("/blood-storage/search"),
+          axiosInstance.get("/blood-groups"),
+        ]);
+        setData(bloodStorageRes.data.records || []);
+        setBloodGroups(bloodGroupRes.data || []);
+      } catch (err) {
         setError("Không thể tải dữ liệu.");
       } finally {
         setLoading(false);
@@ -53,8 +57,8 @@ export default function BloodStorageTable() {
   const filteredData = data.filter((item) => {
     const fullName = item.bloodDonate?.bloodDonationRequest?.fullName?.toLowerCase() || "";
     const statusMatch = statusFilter === "all" || String(item.status) === statusFilter;
-    const bloodType = item.bloodDonate?.bloodType;
-    const bloodTypeMatch = bloodTypeFilter === "all" || String(bloodType) === bloodTypeFilter;
+    const bloodGroupId = item.bloodGroupId;
+    const bloodTypeMatch = bloodTypeFilter === "all" || bloodGroupId === bloodTypeFilter;
     return fullName.includes(searchQuery.toLowerCase()) && statusMatch && bloodTypeMatch;
   });
 
@@ -80,9 +84,9 @@ export default function BloodStorageTable() {
             <SelectValue placeholder="Lọc nhóm máu" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Nhóm máu</SelectItem>
-            {bloodTypes.slice(0, 4).map((type, index) => (
-              <SelectItem key={index} value={index.toString()}>{type}</SelectItem>
+            <SelectItem value="all">Tất cả nhóm máu</SelectItem>
+            {bloodGroups.map((group: any) => (
+              <SelectItem key={group.id} value={group.id}>{group.displayName}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -92,7 +96,7 @@ export default function BloodStorageTable() {
             <SelectValue placeholder="Lọc theo trạng thái" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Trạng thái</SelectItem>
+            <SelectItem value="all">Tất cả trạng thái</SelectItem>
             {BloodStorageStatus.map((label, index) => (
               <SelectItem key={index} value={index.toString()}>{label}</SelectItem>
             ))}
@@ -123,16 +127,16 @@ export default function BloodStorageTable() {
             <tbody>
               {paginatedData.map((entry, idx) => {
                 const donor = entry.bloodDonate?.bloodDonationRequest;
-                const bloodTypeIndex = entry.bloodDonate?.bloodType;
                 const createdDate = new Date(entry.createdDate).toLocaleDateString("vi-VN");
                 const expiredDate = new Date(entry.expiredDate).toLocaleDateString("vi-VN");
+                const bloodGroupName = bloodGroups.find(bg => bg.id === entry.bloodGroupId)?.displayName || "-";
 
                 return (
                   <React.Fragment key={entry.id}>
                     <tr className="border-t text-center">
                       <td className="p-2">{entry.code || `${pageIndex * pageSize + idx + 1}`}</td>
                       <td className="p-2">{donor?.fullName || "-"}</td>
-                      <td className="p-2">{bloodTypes[bloodTypeIndex] || "-"}</td>
+                      <td className="p-2">{bloodGroupName}</td>
                       <td className="p-2">{entry.volume} ml</td>
                       <td className="p-2">{entry.bloodComponent?.name || "-"}</td>
                       <td className="p-2">{createdDate}</td>
@@ -156,28 +160,37 @@ export default function BloodStorageTable() {
                             <div>
                               <p><strong>Họ tên:</strong> {donor?.fullName}</p>
                               <p><strong>Giới tính:</strong> {donor?.gender ? "Nam" : "Nữ"}</p>
-                              <p><strong>Tuổi:</strong> {donor?.healthCheckForm?.age || "-"}</p>
+                              <p><strong>Tuổi:</strong> {donor?.age || "-"}</p>
                               <p><strong>Email:</strong> {donor?.email}</p>
                               <p><strong>Địa chỉ:</strong> {donor?.addresss}</p>
-                              <p><strong>Mô tả:</strong> {entry.description}</p>
+                              <p><strong>Mô tả:</strong> {entry.bloodDonate?.description || "-"}</p>
                             </div>
                             <div className="flex gap-4">
-                              <div className="flex-1">
-                                <img
-                                  src={donor?.frontUrlIdentity}
-                                  alt="CCCD mặt trước"
-                                  className="w-full max-h-[250px] object-contain border rounded"
-                                />
-                                <p className="text-sm text-center mt-1">CCCD mặt trước</p>
-                              </div>
-                              <div className="flex-1">
-                                <img
-                                  src={donor?.backUrlIdentity}
-                                  alt="CCCD mặt sau"
-                                  className="w-full max-h-[250px] object-contain border rounded"
-                                />
-                                <p className="text-sm text-center mt-1">CCCD mặt sau</p>
-                              </div>
+                              {donor?.frontUrlIdentity ? (
+                                <div className="flex-1">
+                                  <img
+                                    src={donor.frontUrlIdentity}
+                                    alt="CCCD mặt trước"
+                                    className="w-full max-h-[250px] object-contain border rounded"
+                                  />
+                                  <p className="text-sm text-center mt-1">CCCD mặt trước</p>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-center text-red-500">Không có ảnh CCCD mặt trước</p>
+                              )}
+
+                              {donor?.backUrlIdentity ? (
+                                <div className="flex-1">
+                                  <img
+                                    src={donor.backUrlIdentity}
+                                    alt="CCCD mặt sau"
+                                    className="w-full max-h-[250px] object-contain border rounded"
+                                  />
+                                  <p className="text-sm text-center mt-1">CCCD mặt sau</p>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-center text-red-500">Không có ảnh CCCD mặt sau</p>
+                              )}
                             </div>
                           </div>
                         </td>

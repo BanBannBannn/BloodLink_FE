@@ -11,15 +11,16 @@ export interface BloodHistoryEntry {
     addresss?: string;
     frontUrlIdentity?: string;
     backUrlIdentity?: string;
+    description?: string;
     healthCheckForm?: {
       age?: number;
     };
   };
+  description?: string;
   bloodType: number;
   donationDate: string;
   volume: number;
   status: number;
-  description?: string;
   bloodGroup: string;
 }
 
@@ -34,7 +35,7 @@ export default function useBloodHistory() {
     try {
       const response = await axiosInstance.get("/blood-donations/search", {
         params: {
-          statuses: "1,3", 
+          statuses: "1,3",
         },
       });
       setData(response.data.records || []);

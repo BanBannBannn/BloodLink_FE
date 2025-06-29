@@ -35,7 +35,7 @@ export default function BloodRawTable() {
     pageIndex * pageSize,
     (pageIndex + 1) * pageSize
   );
-
+  
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Lịch sử nhận máu</h1>
@@ -96,7 +96,7 @@ export default function BloodRawTable() {
                 <React.Fragment key={entry.id}>
                   <tr className="border-t text-center">
                     <td className="p-2">{entry.code || `${idx + 1}`}</td>
-                    <td className="p-2">{entry.bloodGroup}</td>
+                    <td className="p-2">{bloodTypes[entry.bloodType] || "-"}</td>
                     <td className="p-2">
                       {new Date(entry.donationDate).toLocaleDateString("vi-VN")}
                     </td>
@@ -131,7 +131,6 @@ export default function BloodRawTable() {
                             <p><strong>Tuổi:</strong> {entry.bloodDonationRequest?.healthCheckForm?.age || "-"}</p>
                             <p><strong>Email:</strong> {entry.bloodDonationRequest?.email}</p>
                             <p><strong>Địa chỉ:</strong> {entry.bloodDonationRequest?.addresss}</p>
-                            <p><strong>Mô tả:</strong> {entry.description}</p>
                           </div>
                           <div className="flex gap-4">
                             <div className="flex-1">

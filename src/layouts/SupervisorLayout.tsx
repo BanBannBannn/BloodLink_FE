@@ -54,7 +54,7 @@ export default function SupervisorLayout() {
               }`}
             >
               <ArrowsUpDownIcon className="w-5 h-5" />
-              Lịch sử hiến máu
+              Lịch sử nhận máu
             </Link>
             <Link
               to="/supervisor/blood-sotage"
