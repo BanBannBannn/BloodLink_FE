@@ -8,8 +8,10 @@ import {
 import { Button } from "./ui/button";
 import { History, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
 
 function NavBar() {
+  const [open, setOpen] = useState<boolean>(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -55,18 +57,20 @@ function NavBar() {
             );
           })}
           {user && (
-            <DropdownMenu>
+            <DropdownMenu open={open} onOpenChange={setOpen}>
               <DropdownMenuTrigger>
-                <Button variant={"secondary"}>{user.fullName}</Button>
+                <Button variant={"secondary"} onClick={() => setOpen(true)}>
+                  {user.fullName}
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpen(false)}>
                   <Link to="/profile" className="flex items-center gap-2">
                     <User />
                     Thông tin cá nhân
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpen(false)}>
                   <Link
                     to="/blood-donation-history"
                     className="flex items-center gap-2"
@@ -75,7 +79,7 @@ function NavBar() {
                     Lịch sử hiến máu
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpen(false)}>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 cursor-pointer"
