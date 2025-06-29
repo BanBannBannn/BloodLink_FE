@@ -84,7 +84,7 @@ export default function BloodRawTable() {
                 <th className="p-2">Mã yêu cầu</th>
                 <th className="p-2">Tên</th>
                 <th className="p-2">Nhóm máu</th>
-                <th className="p-2">Ngày yêu cầu</th>
+                <th className="p-2">Ngày nhận máu</th>
                 <th className="p-2">Thể tích</th>
                 <th className="p-2">Trạng thái</th>
                 <th className="p-2">Ghi chú</th>
@@ -92,9 +92,9 @@ export default function BloodRawTable() {
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((entry) => (
+              {paginatedData.map((entry, idx) => (
                 <tr key={entry.id} className="border-t text-center">
-                  <td className="p-2">{entry.code}</td>
+                  <td className="p-2">{entry.code || `${idx + 1}`}</td>
                   <td className="p-2">
                     {entry.bloodDonationRequest?.fullName || "-"}
                   </td>

@@ -13,3 +13,10 @@ export const timeSlots = [
   "15:00 - 15:30",
   "15:30 - 16:00",
 ];
+
+export const BloodStorageStatus =
+  ["Chưa kiểm tra",
+    "An toàn ",
+    "Hết hạn",
+    "Không đạt yêu cầu",
+  ];
