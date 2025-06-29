@@ -6,12 +6,21 @@ export interface BloodHistoryEntry {
   id: string;
   bloodDonationRequest?: {
     fullName: string;
+    gender: boolean;
+    email?: string;
+    addresss?: string;
+    frontUrlIdentity?: string;
+    backUrlIdentity?: string;
+    healthCheckForm?: {
+      age?: number;
+    };
   };
   bloodType: number;
   donationDate: string;
   volume: number;
   status: number;
   description?: string;
+  bloodGroup: string;
 }
 
 export default function useBloodHistory() {

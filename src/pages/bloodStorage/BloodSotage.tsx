@@ -9,6 +9,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { bloodTypes, BloodStorageStatus } from "@/constants/constants";
+import { MoreHorizontal } from "lucide-react";
 
 export default function BloodStorageTable() {
   const [data, setData] = useState<any[]>([]);
@@ -18,22 +19,18 @@ export default function BloodStorageTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
-
   const [pageIndex, setPageIndex] = useState(0);
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+
   const pageSize = 10;
 
   const getStatusColorClass = (status: number) => {
     switch (status) {
-      case 0:
-        return "text-yellow-600";
-      case 1:
-        return "text-green-600";
-      case 2:
-        return "text-red-600";
-      case 3:
-        return "text-orange-600";
-      default:
-        return "";
+      case 0: return "text-yellow-600";
+      case 1: return "text-green-600";
+      case 2: return "text-red-600";
+      case 3: return "text-orange-600";
+      default: return "";
     }
   };
 
@@ -54,18 +51,11 @@ export default function BloodStorageTable() {
   }, []);
 
   const filteredData = data.filter((item) => {
-    const fullName =
-      item.bloodDonate?.bloodDonationRequest?.fullName?.toLowerCase() || "";
-    const statusMatch =
-      statusFilter === "all" || String(item.status) === statusFilter;
+    const fullName = item.bloodDonate?.bloodDonationRequest?.fullName?.toLowerCase() || "";
+    const statusMatch = statusFilter === "all" || String(item.status) === statusFilter;
     const bloodType = item.bloodDonate?.bloodType;
-    const bloodTypeMatch =
-      bloodTypeFilter === "all" || String(bloodType) === bloodTypeFilter;
-    return (
-      fullName.includes(searchQuery.toLowerCase()) &&
-      statusMatch &&
-      bloodTypeMatch
-    );
+    const bloodTypeMatch = bloodTypeFilter === "all" || String(bloodType) === bloodTypeFilter;
+    return fullName.includes(searchQuery.toLowerCase()) && statusMatch && bloodTypeMatch;
   });
 
   const paginatedData = filteredData.slice(
@@ -92,9 +82,7 @@ export default function BloodStorageTable() {
           <SelectContent>
             <SelectItem value="all">Nhóm máu</SelectItem>
             {bloodTypes.slice(0, 4).map((type, index) => (
-              <SelectItem key={index} value={index.toString()}>
-                {type}
-              </SelectItem>
+              <SelectItem key={index} value={index.toString()}>{type}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -106,9 +94,7 @@ export default function BloodStorageTable() {
           <SelectContent>
             <SelectItem value="all">Trạng thái</SelectItem>
             {BloodStorageStatus.map((label, index) => (
-              <SelectItem key={index} value={index.toString()}>
-                {label}
-              </SelectItem>
+              <SelectItem key={index} value={index.toString()}>{label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -131,6 +117,7 @@ export default function BloodStorageTable() {
                 <th className="p-2">Ngày tạo</th>
                 <th className="p-2">Ngày hết hạn</th>
                 <th className="p-2">Trạng thái</th>
+                <th className="p-2">Chi tiết</th>
               </tr>
             </thead>
             <tbody>
@@ -139,28 +126,70 @@ export default function BloodStorageTable() {
                 const bloodTypeIndex = entry.bloodDonate?.bloodType;
                 const createdDate = new Date(entry.createdDate).toLocaleDateString("vi-VN");
                 const expiredDate = new Date(entry.expiredDate).toLocaleDateString("vi-VN");
+
                 return (
-                  <tr key={entry.id} className="border-t text-center">
-                    <td className="p-2">{entry.code || `${pageIndex * pageSize + idx + 1}`}</td>
-                    <td className="p-2">{donor?.fullName || "-"}</td>
-                    <td className="p-2">{bloodTypes[bloodTypeIndex] || "-"}</td>
-                    <td className="p-2">{entry.volume} ml</td>
-                    <td className="p-2">{entry.bloodComponent?.name || "-"}</td>
-                    <td className="p-2">{createdDate}</td>
-                    <td className="p-2">{expiredDate}</td>
-                    <td className="p-2">
-                      <span className={`font-semibold ${getStatusColorClass(entry.status)}`}>
-                        {BloodStorageStatus[entry.status]}
-                      </span>
-                    </td>
-                  </tr>
+                  <React.Fragment key={entry.id}>
+                    <tr className="border-t text-center">
+                      <td className="p-2">{entry.code || `${pageIndex * pageSize + idx + 1}`}</td>
+                      <td className="p-2">{donor?.fullName || "-"}</td>
+                      <td className="p-2">{bloodTypes[bloodTypeIndex] || "-"}</td>
+                      <td className="p-2">{entry.volume} ml</td>
+                      <td className="p-2">{entry.bloodComponent?.name || "-"}</td>
+                      <td className="p-2">{createdDate}</td>
+                      <td className="p-2">{expiredDate}</td>
+                      <td className="p-2 font-semibold">
+                        <span className={getStatusColorClass(entry.status)}>
+                          {BloodStorageStatus[entry.status]}
+                        </span>
+                      </td>
+                      <td className="p-2">
+                        <button onClick={() => setExpandedRowId(expandedRowId === entry.id ? null : entry.id)}>
+                          <MoreHorizontal className="w-5 h-5" />
+                        </button>
+                      </td>
+                    </tr>
+
+                    {expandedRowId === entry.id && (
+                      <tr className="bg-gray-50 text-left">
+                        <td colSpan={9} className="p-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p><strong>Họ tên:</strong> {donor?.fullName}</p>
+                              <p><strong>Giới tính:</strong> {donor?.gender ? "Nam" : "Nữ"}</p>
+                              <p><strong>Tuổi:</strong> {donor?.healthCheckForm?.age || "-"}</p>
+                              <p><strong>Email:</strong> {donor?.email}</p>
+                              <p><strong>Địa chỉ:</strong> {donor?.addresss}</p>
+                              <p><strong>Mô tả:</strong> {entry.description}</p>
+                            </div>
+                            <div className="flex gap-4">
+                              <div className="flex-1">
+                                <img
+                                  src={donor?.frontUrlIdentity}
+                                  alt="CCCD mặt trước"
+                                  className="w-full max-h-[250px] object-contain border rounded"
+                                />
+                                <p className="text-sm text-center mt-1">CCCD mặt trước</p>
+                              </div>
+                              <div className="flex-1">
+                                <img
+                                  src={donor?.backUrlIdentity}
+                                  alt="CCCD mặt sau"
+                                  className="w-full max-h-[250px] object-contain border rounded"
+                                />
+                                <p className="text-sm text-center mt-1">CCCD mặt sau</p>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </tbody>
           </table>
 
-          {/* Paging */}
-          <div className="bottom justify-between items-center mt-4">
+          <div className="flex justify-between items-center mt-4">
             <button
               disabled={pageIndex === 0}
               onClick={() => setPageIndex(pageIndex - 1)}
