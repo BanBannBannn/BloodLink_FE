@@ -4,6 +4,9 @@ import apiClient from "@/api/apiClient";
 
 export interface BloodDonation {
   bloodDonationRequest: {
+    code: string;
+    frontUrlIdentity: any;
+    backUrlIdentity: any;
     fullName: string;
     gender: boolean;
     email?: string;
@@ -12,6 +15,8 @@ export interface BloodDonation {
       age?: number;
     };
   };
+  frontUrlIdentity?: string;
+  backUrlIdentity?: string;
   donationDate: string | number | Date;
   volume: number;
   description: string;
