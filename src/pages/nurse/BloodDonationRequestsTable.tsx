@@ -1,15 +1,23 @@
 import React, { useState } from "react";
 import useBloodDonationRequests from "@/hooks/useBloodDonationRequests";
 import { Button } from "@/components/ui/button";
-import axiosInstance from "@/lib/axios";
+import apiClient from "@/api/apiClient";
 import HealthCheckFormModal from "./HealthCheckFormModal";
 import { EyeIcon, MoreHorizontal } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { bloodTypes } from "@/constants/constants";
 
 export default function BloodDonationRequestsTable() {
   const { data, loading, error, refresh } = useBloodDonationRequests();
+
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [showHealthForm, setShowHealthForm] = useState(false);
@@ -20,18 +28,29 @@ export default function BloodDonationRequestsTable() {
 
   const handleReject = async (id: string) => {
     const rejectNote = prompt("Nhập lý do từ chối:");
-    if (!rejectNote || rejectNote.trim() === "") {
+    if (!rejectNote?.trim()) {
       setAlertMessage("Vui lòng nhập lý do từ chối để tiếp tục.");
       return;
     }
 
     try {
-      await axiosInstance.put(
-        `/api/blood-donation-requests/status/${id}?status=2&rejectNote=${encodeURIComponent(rejectNote.trim())}`
+      await apiClient.put(
+        `/blood-donation-requests/status/${id}?status=2&rejectNote=${encodeURIComponent(
+          rejectNote.trim()
+        )}`
       );
       refresh();
     } catch {
       setAlertMessage("Đã xảy ra lỗi khi từ chối yêu cầu.");
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    try {
+      await apiClient.put(`/blood-donation-requests/status/${id}?status=1`);
+      refresh();
+    } catch {
+      setAlertMessage("Cập nhật trạng thái thất bại!");
     }
   };
 
@@ -41,18 +60,16 @@ export default function BloodDonationRequestsTable() {
   };
 
   const filteredData = data.filter((item) => {
-    const matchesStatus =
-      statusFilter === "all" || String(item.status) === statusFilter;
-    const matchesSearch = item.fullName
-      ?.toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
+    const matchStatus = statusFilter === "all" || `${item.status}` === statusFilter;
+    const matchSearch = item.fullName?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchStatus && matchSearch;
   });
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Danh sách yêu cầu hiến máu</h1>
 
+      {/* Filters */}
       <div className="flex gap-4 mb-4">
         <Input
           placeholder="Tìm theo tên..."
@@ -61,7 +78,7 @@ export default function BloodDonationRequestsTable() {
           className="w-48"
         />
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-38">
+          <SelectTrigger className="w-40">
             <SelectValue placeholder="Lọc theo trạng thái" />
           </SelectTrigger>
           <SelectContent>
@@ -80,6 +97,7 @@ export default function BloodDonationRequestsTable() {
         </Alert>
       )}
 
+      {/* Table */}
       {loading ? (
         <p>Đang tải dữ liệu...</p>
       ) : error ? (
@@ -102,16 +120,16 @@ export default function BloodDonationRequestsTable() {
                 <tr className="border-t text-center">
                   <td className="p-2">{index + 1}</td>
                   <td className="p-2">{item.fullName}</td>
-                  <td className="p-2">{["A", "B", "AB", "O"][item.bloodType]}</td>
+                  <td className="p-2">{bloodTypes[item.bloodType]}</td>
                   <td className="p-2">
                     {new Date(item.donatedDateRequest).toLocaleDateString("vi-VN")}
                   </td>
                   <td
                     className={`p-2 capitalize ${item.status === 0
-                      ? "text-yellow-600"
-                      : item.status === 1
-                        ? "text-green-600"
-                        : "text-red-600"
+                        ? "text-yellow-600"
+                        : item.status === 1
+                          ? "text-green-600"
+                          : "text-red-600"
                       }`}
                   >
                     {item.status === 0
@@ -138,12 +156,7 @@ export default function BloodDonationRequestsTable() {
                           Từ chối
                         </Button>
                         <Button
-                          onClick={() =>
-                            axiosInstance
-                              .put(`/api/blood-donation-requests/status/${item.id}?status=1`)
-                              .then(refresh)
-                              .catch(() => setAlertMessage("Cập nhật trạng thái thất bại!"))
-                          }
+                          onClick={() => handleApprove(item.id)}
                           className="text-green-500 border border-green-500 hover:bg-green-100 bg-white"
                         >
                           Duyệt
@@ -163,9 +176,7 @@ export default function BloodDonationRequestsTable() {
                       variant="outline"
                       className="p-2"
                       onClick={() =>
-                        expandedRowId === item.id
-                          ? setExpandedRowId(null)
-                          : setExpandedRowId(item.id)
+                        setExpandedRowId((prev) => (prev === item.id ? null : item.id))
                       }
                     >
                       <MoreHorizontal className="w-4 h-4" />
@@ -191,6 +202,7 @@ export default function BloodDonationRequestsTable() {
         </table>
       )}
 
+      {/* Health Check Form Modals */}
       {selectedRequest && showHealthForm && (
         <HealthCheckFormModal
           request={selectedRequest}
