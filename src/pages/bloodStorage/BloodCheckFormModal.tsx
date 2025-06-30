@@ -13,7 +13,7 @@ export default function BloodCheckFormModal({ donation, onClose }: { donation: a
         mchc: "",
         plt: "",
         mpv: "",
-        description: "",
+       
     });
 
     const [error, setError] = useState<string | null>(null);
@@ -26,9 +26,9 @@ export default function BloodCheckFormModal({ donation, onClose }: { donation: a
             .then(res => setBloodGroups(res.data))
             .catch(() => setError("Không tải được danh sách nhóm máu"));
 
-        if (donation.bloodDonationRequest?.bloodGroupId) {
-            setSelectedGroup(donation.bloodDonationRequest.bloodGroupId);
-        }
+        // if (donation.bloodDonationRequest?.bloodGroupId) {
+        //     setSelectedGroup(donation.bloodDonationRequest.bloodGroupId);
+        // }
     }, [donation]);
 
     const handleChange = (key: string, value: string) => {
@@ -39,7 +39,8 @@ export default function BloodCheckFormModal({ donation, onClose }: { donation: a
         try {
             await axiosInstance.post("/blood-checks", {
                 ...Object.fromEntries(Object.entries(form).map(([k, v]) => [k, Number(v) || 0])),
-                bloodGroupName: selectedGroup,
+                description: "",
+                bloodGroupId: selectedGroup,
                 bloodDonationId: donation.id,
             });
 
@@ -55,7 +56,6 @@ export default function BloodCheckFormModal({ donation, onClose }: { donation: a
             <div className="bg-white p-6 rounded-lg w-[500px] max-h-[90vh] overflow-y-auto">
                 <h2 className="text-xl font-semibold mb-4">Phiếu kiểm tra máu</h2>
 
-
                 <div className="grid grid-cols-2 gap-4">
                     <div className="mb-3">
                         <label className="block mb-1">Nhóm máu</label>
@@ -66,7 +66,7 @@ export default function BloodCheckFormModal({ donation, onClose }: { donation: a
                         >
                             <option value="">-- Chọn nhóm máu --</option>
                             {bloodGroups.map((g) => (
-                                <option key={g.id} value={g.displayName}>
+                                <option key={g.id} value={g.id}>
                                     {g.displayName}
                                 </option>
                             ))}
