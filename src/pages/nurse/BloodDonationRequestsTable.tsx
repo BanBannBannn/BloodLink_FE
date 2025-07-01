@@ -15,6 +15,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { bloodTypes } from "@/constants/constants";
+import BloodStatisticsDashboard from "./blood-statistics-dashboard";
 
 export default function BloodDonationRequestsTable() {
   const { data, loading, error, refresh } = useBloodDonationRequests();
@@ -62,8 +63,11 @@ export default function BloodDonationRequestsTable() {
   };
 
   const filteredData = data.filter((item) => {
-    const matchStatus = statusFilter === "all" || `${item.status}` === statusFilter;
-    const matchSearch = item.fullName?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchStatus =
+      statusFilter === "all" || `${item.status}` === statusFilter;
+    const matchSearch = item.fullName
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
     return matchStatus && matchSearch;
   });
 
