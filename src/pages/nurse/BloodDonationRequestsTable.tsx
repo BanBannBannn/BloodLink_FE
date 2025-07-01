@@ -14,6 +14,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { bloodTypes } from "@/constants/constants";
+import BloodStatisticsDashboard from "./blood-statistics-dashboard";
 
 export default function BloodDonationRequestsTable() {
   const { data, loading, error, refresh } = useBloodDonationRequests();
@@ -63,8 +64,11 @@ export default function BloodDonationRequestsTable() {
   };
 
   const filteredData = data.filter((item) => {
-    const matchStatus = statusFilter === "all" || `${item.status}` === statusFilter;
-    const matchSearch = item.fullName?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchStatus =
+      statusFilter === "all" || `${item.status}` === statusFilter;
+    const matchSearch = item.fullName
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
     return matchStatus && matchSearch;
   });
 
@@ -74,9 +78,10 @@ export default function BloodDonationRequestsTable() {
   );
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Danh sách yêu cầu hiến máu</h1>
-
+    <div className="p-6">
+      {/* <h1 className="text-2xl font-bold mb-4">Danh sách yêu cầu hiến máu</h1> */}
+      {/* Make By Bân */}
+      <BloodStatisticsDashboard />
       {/* Filters */}
       <div className="flex gap-4 mb-4">
         <Input
@@ -88,10 +93,13 @@ export default function BloodDonationRequestsTable() {
           }}
           className="w-48"
         />
-        <Select value={statusFilter} onValueChange={(v) => {
-          setStatusFilter(v);
-          setPageIndex(0);
-        }}>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v);
+            setPageIndex(0);
+          }}
+        >
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Lọc theo trạng thái" />
           </SelectTrigger>
@@ -132,33 +140,74 @@ export default function BloodDonationRequestsTable() {
               {paginatedData.map((item, index) => (
                 <React.Fragment key={item.id}>
                   <tr className="border-t text-center">
-                    <td className="p-2">{item.code ||pageIndex * pageSize + index + 1}</td>
+                    <td className="p-2">
+                      {item.code || pageIndex * pageSize + index + 1}
+                    </td>
                     <td className="p-2">{item.fullName}</td>
                     <td className="p-2">{bloodTypes[item.bloodType]}</td>
                     <td className="p-2">
-                      {new Date(item.donatedDateRequest).toLocaleDateString("vi-VN")}
+                      {new Date(item.donatedDateRequest).toLocaleDateString(
+                        "vi-VN"
+                      )}
                     </td>
-                    <td className={`p-2 capitalize ${item.status === 0 ? "text-yellow-600" : item.status === 1 ? "text-green-600" : "text-red-600"}`}>
-                      {item.status === 0 ? "Đang chờ" : item.status === 1 ? "Đã duyệt" : "Từ chối"}
+                    <td
+                      className={`p-2 capitalize ${
+                        item.status === 0
+                          ? "text-yellow-600"
+                          : item.status === 1
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {item.status === 0
+                        ? "Đang chờ"
+                        : item.status === 1
+                        ? "Đã duyệt"
+                        : "Từ chối"}
                     </td>
                     <td className="p-2 flex gap-2 justify-center">
                       {item.status === 0 && !item.healthCheckForm && (
-                        <Button onClick={() => handleOpenForm(item)} className="text-blue-500 border border-blue-500 hover:bg-blue-100 bg-white">Điền form</Button>
+                        <Button
+                          onClick={() => handleOpenForm(item)}
+                          className="text-blue-500 border border-blue-500 hover:bg-blue-100 bg-white"
+                        >
+                          Điền form
+                        </Button>
                       )}
                       {item.status === 0 && item.healthCheckForm && (
                         <>
-                          <Button onClick={() => handleReject(item.id)} className="text-red-500 border border-red-500 hover:bg-red-100 bg-white">Từ chối</Button>
-                          <Button onClick={() => handleApprove(item.id)} className="text-green-500 border border-green-500 hover:bg-green-100 bg-white">Duyệt</Button>
+                          <Button
+                            onClick={() => handleReject(item.id)}
+                            className="text-red-500 border border-red-500 hover:bg-red-100 bg-white"
+                          >
+                            Từ chối
+                          </Button>
+                          <Button
+                            onClick={() => handleApprove(item.id)}
+                            className="text-green-500 border border-green-500 hover:bg-green-100 bg-white"
+                          >
+                            Duyệt
+                          </Button>
                         </>
                       )}
                       {item.healthCheckForm && (
-                        <Button variant="outline" className="p-2" onClick={() => setViewHealthForm(item)}>
+                        <Button
+                          variant="outline"
+                          className="p-2"
+                          onClick={() => setViewHealthForm(item)}
+                        >
                           <EyeIcon className="w-4 h-4" />
                         </Button>
                       )}
-                      <Button variant="outline" className="p-2" onClick={() =>
-                        setExpandedRowId((prev) => (prev === item.id ? null : item.id))
-                      }>
+                      <Button
+                        variant="outline"
+                        className="p-2"
+                        onClick={() =>
+                          setExpandedRowId((prev) =>
+                            prev === item.id ? null : item.id
+                          )
+                        }
+                      >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </td>
@@ -167,25 +216,60 @@ export default function BloodDonationRequestsTable() {
                   {expandedRowId === item.id && (
                     <tr className="border-t bg-gray-50">
                       <td colSpan={6} className="p-4 text-left text-sm">
-                        <p><strong>Họ tên:</strong> {item.fullName}</p>
-                        <p><strong>Giới tính:</strong> {item.gender ? "Nam" : "Nữ"}</p>
-                        <p><strong>Tuổi:</strong> {item.age || "-"}</p>
-                        <p><strong>Mã định danh:</strong> {item.identityId || "-"}</p>
-                        <p><strong>Nhóm máu:</strong> {bloodTypes[item.bloodType]}</p>
-                        <p><strong>Ngày yêu cầu:</strong> {new Date(item.donatedDateRequest).toLocaleDateString("vi-VN")}</p>
-                        <p><strong>Ghi chú:</strong> {item.reasonReject || item.healthCheckForm?.note || "-"}</p>
+                        <p>
+                          <strong>Họ tên:</strong> {item.fullName}
+                        </p>
+                        <p>
+                          <strong>Giới tính:</strong>{" "}
+                          {item.gender ? "Nam" : "Nữ"}
+                        </p>
+                        <p>
+                          <strong>Tuổi:</strong> {item.age || "-"}
+                        </p>
+                        <p>
+                          <strong>Mã định danh:</strong>{" "}
+                          {item.identityId || "-"}
+                        </p>
+                        <p>
+                          <strong>Nhóm máu:</strong>{" "}
+                          {bloodTypes[item.bloodType]}
+                        </p>
+                        <p>
+                          <strong>Ngày yêu cầu:</strong>{" "}
+                          {new Date(item.donatedDateRequest).toLocaleDateString(
+                            "vi-VN"
+                          )}
+                        </p>
+                        <p>
+                          <strong>Ghi chú:</strong>{" "}
+                          {item.reasonReject ||
+                            item.healthCheckForm?.note ||
+                            "-"}
+                        </p>
 
                         <div className="flex gap-4 mt-4">
                           {item.frontUrlIdentity && (
                             <div className="flex-1">
-                              <img src={item.frontUrlIdentity} alt="CCCD mặt trước" className="w-full max-h-[250px] object-contain border rounded" />
-                              <p className="text-sm text-center mt-1">CCCD mặt trước</p>
+                              <img
+                                src={item.frontUrlIdentity}
+                                alt="CCCD mặt trước"
+                                className="w-full max-h-[250px] object-contain border rounded"
+                              />
+                              <p className="text-sm text-center mt-1">
+                                CCCD mặt trước
+                              </p>
                             </div>
                           )}
                           {item.backUrlIdentity && (
                             <div className="flex-1">
-                              <img src={item.backUrlIdentity} alt="CCCD mặt sau" className="w-full max-h-[250px] object-contain border rounded" />
-                              <p className="text-sm text-center mt-1">CCCD mặt sau</p>
+                              <img
+                                src={item.backUrlIdentity}
+                                alt="CCCD mặt sau"
+                                className="w-full max-h-[250px] object-contain border rounded"
+                              />
+                              <p className="text-sm text-center mt-1">
+                                CCCD mặt sau
+                              </p>
                             </div>
                           )}
                         </div>
@@ -207,7 +291,8 @@ export default function BloodDonationRequestsTable() {
               Trước
             </button>
             <span>
-              Trang {pageIndex + 1} / {Math.ceil(filteredData.length / pageSize) || 1}
+              Trang {pageIndex + 1} /{" "}
+              {Math.ceil(filteredData.length / pageSize) || 1}
             </span>
             <button
               disabled={(pageIndex + 1) * pageSize >= filteredData.length}
