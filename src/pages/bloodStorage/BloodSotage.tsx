@@ -51,11 +51,18 @@ export default function BloodStorageTable() {
   }, []);
 
   const filteredData = data.filter((item) => {
-    const fullName = item.bloodDonate?.bloodDonationRequest?.fullName?.toLowerCase() || "";
-    const statusMatch = statusFilter === "all" || String(item.status) === statusFilter;
+    const fullName =
+      item.bloodDonate?.bloodDonationRequest?.fullName?.toLowerCase() || "";
+    const statusMatch =
+      statusFilter === "all" || String(item.status) === statusFilter;
     const bloodGroupId = item.bloodGroupId;
-    const bloodTypeMatch = bloodTypeFilter === "all" || bloodGroupId === bloodTypeFilter;
-    return fullName.includes(searchQuery.toLowerCase()) && statusMatch && bloodTypeMatch;
+    const bloodTypeMatch =
+      bloodTypeFilter === "all" || bloodGroupId === bloodTypeFilter;
+    return (
+      fullName.includes(searchQuery.toLowerCase()) &&
+      statusMatch &&
+      bloodTypeMatch
+    );
   });
 
   const paginatedData = filteredData.slice(
