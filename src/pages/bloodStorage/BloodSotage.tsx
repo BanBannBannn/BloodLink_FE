@@ -9,7 +9,14 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { BloodStorageStatus } from "@/constants/constants";
-import { MoreHorizontal } from "lucide-react";
+import {
+  Calendar,
+  Droplet,
+  Droplets,
+  Filter,
+  MoreHorizontal,
+  Search,
+} from "lucide-react";
 
 export default function BloodStorageTable() {
   const [data, setData] = useState<any[]>([]);
@@ -22,18 +29,7 @@ export default function BloodStorageTable() {
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
   const [pageIndex, setPageIndex] = useState(0);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
-
   const pageSize = 10;
-
-  const getStatusColorClass = (status: number) => {
-    switch (status) {
-      case 0: return "text-yellow-600";
-      case 1: return "text-green-600";
-      case 2: return "text-red-600";
-      case 3: return "text-orange-600";
-      default: return "";
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,162 +63,184 @@ export default function BloodStorageTable() {
     (pageIndex + 1) * pageSize
   );
 
+  const getStatusBadge = (status: number) => {
+    const color =
+      status === 1 ? "green" :
+        status === 0 ? "yellow" :
+          status === 2 ? "red" : "orange";
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${color}-100 text-${color}-800 border border-${color}-200`}>
+        {BloodStorageStatus[status]}
+      </span>
+    );
+  };
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Danh sách máu lưu trữ</h1>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Kho máu</h1>
+        <p className="text-gray-600 mb-6">Quản lý danh sách máu đã lưu trữ từ người hiến máu</p>
 
-      <div className="flex gap-4 mb-4">
-        <Input
-          placeholder="Tìm theo tên..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-48"
-        />
+        {/* Filters */}
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Tìm kiếm theo tên người hiến..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setPageIndex(0);
+                  setSearchQuery(e.target.value);
+                }}
+                className="pl-10 border-gray-300"
+              />
+            </div>
 
-        <Select value={bloodTypeFilter} onValueChange={setBloodTypeFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Lọc nhóm máu" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả nhóm máu</SelectItem>
-            {bloodGroups.map((group: any) => (
-              <SelectItem key={group.id} value={group.id}>{group.displayName}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Select value={bloodTypeFilter} onValueChange={(val) => {
+                setBloodTypeFilter(val);
+                setPageIndex(0);
+              }}>
+                <SelectTrigger className="w-48 pl-10">
+                  <SelectValue placeholder="Lọc nhóm máu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả nhóm máu</SelectItem>
+                  {bloodGroups.map((group) => (
+                    <SelectItem key={group.id} value={group.id}>{group.displayName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Lọc theo trạng thái" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tất cả trạng thái</SelectItem>
-            {BloodStorageStatus.map((label, index) => (
-              <SelectItem key={index} value={index.toString()}>{label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {loading ? (
-        <p>Đang tải dữ liệu...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : (
-        <>
-          <table className="w-full border">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="p-2">Mã</th>
-                <th className="p-2">Họ tên</th>
-                <th className="p-2">Nhóm máu</th>
-                <th className="p-2">Thể tích</th>
-                <th className="p-2">Loại chế phẩm</th>
-                <th className="p-2">Ngày tạo</th>
-                <th className="p-2">Ngày hết hạn</th>
-                <th className="p-2">Trạng thái</th>
-                <th className="p-2">Chi tiết</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedData.map((entry, idx) => {
-                const donor = entry.bloodDonate?.bloodDonationRequest;
-                const createdDate = new Date(entry.createdDate).toLocaleDateString("vi-VN");
-                const expiredDate = new Date(entry.expiredDate).toLocaleDateString("vi-VN");
-                const bloodGroupName = bloodGroups.find(bg => bg.id === entry.bloodGroupId)?.displayName || "-";
-
-                return (
-                  <React.Fragment key={entry.id}>
-                    <tr className="border-t text-center">
-                      <td className="p-2">{entry.code || `${pageIndex * pageSize + idx + 1}`}</td>
-                      <td className="p-2">{donor?.fullName || "-"}</td>
-                      <td className="p-2">{bloodGroupName}</td>
-                      <td className="p-2">{entry.volume} ml</td>
-                      <td className="p-2">{entry.bloodComponent?.name || "-"}</td>
-                      <td className="p-2">{createdDate}</td>
-                      <td className="p-2">{expiredDate}</td>
-                      <td className="p-2 font-semibold">
-                        <span className={getStatusColorClass(entry.status)}>
-                          {BloodStorageStatus[entry.status]}
-                        </span>
-                      </td>
-                      <td className="p-2">
-                        <button onClick={() => setExpandedRowId(expandedRowId === entry.id ? null : entry.id)}>
-                          <MoreHorizontal className="w-5 h-5" />
-                        </button>
-                      </td>
-                    </tr>
-
-                    {expandedRowId === entry.id && (
-                      <tr className="bg-gray-50 text-left">
-                        <td colSpan={9} className="p-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <p><strong>Họ tên:</strong> {donor?.fullName}</p>
-                              <p><strong>Giới tính:</strong> {donor?.gender ? "Nam" : "Nữ"}</p>
-                              <p><strong>Tuổi:</strong> {donor?.age || "-"}</p>
-                              <p><strong>Email:</strong> {donor?.email}</p>
-                              <p><strong>Địa chỉ:</strong> {donor?.addresss}</p>
-                              <p><strong>Mô tả:</strong> {entry.bloodDonate?.description || "-"}</p>
-                            </div>
-                            <div className="flex gap-4">
-                              {donor?.frontUrlIdentity ? (
-                                <div className="flex-1">
-                                  <img
-                                    src={donor.frontUrlIdentity}
-                                    alt="CCCD mặt trước"
-                                    className="w-full max-h-[250px] object-contain border rounded"
-                                  />
-                                  <p className="text-sm text-center mt-1">CCCD mặt trước</p>
-                                </div>
-                              ) : (
-                                <p className="text-sm text-center text-red-500">Không có ảnh CCCD mặt trước</p>
-                              )}
-
-                              {donor?.backUrlIdentity ? (
-                                <div className="flex-1">
-                                  <img
-                                    src={donor.backUrlIdentity}
-                                    alt="CCCD mặt sau"
-                                    className="w-full max-h-[250px] object-contain border rounded"
-                                  />
-                                  <p className="text-sm text-center mt-1">CCCD mặt sau</p>
-                                </div>
-                              ) : (
-                                <p className="text-sm text-center text-red-500">Không có ảnh CCCD mặt sau</p>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-
-          <div className="flex justify-between items-center mt-4">
-            <button
-              disabled={pageIndex === 0}
-              onClick={() => setPageIndex(pageIndex - 1)}
-              className="px-4 py-2 border rounded disabled:opacity-50"
-            >
-              Trước
-            </button>
-            <span>
-              Trang {pageIndex + 1} / {Math.ceil(filteredData.length / pageSize) || 1}
-            </span>
-            <button
-              disabled={(pageIndex + 1) * pageSize >= filteredData.length}
-              onClick={() => setPageIndex(pageIndex + 1)}
-              className="px-4 py-2 border rounded disabled:opacity-50"
-            >
-              Sau
-            </button>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Select value={statusFilter} onValueChange={(val) => {
+                setStatusFilter(val);
+                setPageIndex(0);
+              }}>
+                <SelectTrigger className="w-48 pl-10">
+                  <SelectValue placeholder="Lọc trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                  {BloodStorageStatus.map((label, i) => (
+                    <SelectItem key={i} value={i.toString()}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </>
-      )}
+        </div>
+
+        {error && <p className="text-red-500">{error}</p>}
+
+        {/* Table */}
+        <div className="bg-white shadow-sm rounded-lg border">
+          {loading ? (
+            <p className="p-4">Đang tải dữ liệu...</p>
+          ) : (
+            <>
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100 text-gray-700 font-semibold">
+                  <tr>
+                    <th className="text-left px-6 py-3">Thông tin</th>
+                    <th className="text-center px-4 py-3">Nhóm máu</th>
+                    <th className="text-center px-4 py-3">Thể tích</th>
+                    <th className="text-center px-4 py-3">Ngày tạo</th>
+                    <th className="text-center px-4 py-3">Ngày hết hạn</th>
+                    <th className="text-center px-4 py-3">Trạng thái</th>
+                    <th className="text-center px-4 py-3">Chi tiết</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedData.map((entry) => {
+                    const donor = entry.bloodDonate?.bloodDonationRequest;
+                    const bloodGroupName = bloodGroups.find(bg => bg.id === entry.bloodGroupId)?.displayName || "-";
+                    return (
+                      <React.Fragment key={entry.id}>
+                        <tr className="border-t hover:bg-gray-50 transition">
+                          <td className="px-6 py-4">
+                            <div className="font-medium">{donor?.fullName || "-"}</div>
+                            <div className="text-xs text-gray-500">Mã: {entry.code}</div>
+                          </td>
+                          <td className="text-center px-4 py-4">
+                            <span className="inline-flex items-center gap-1 text-red-600 font-semibold">
+                              <Droplet className="w-4 h-4" />
+                              {bloodGroupName}
+                            </span>
+                          </td>
+                          <td className="text-center px-4 py-4 text-gray-700">
+                            <Droplets className="inline w-4 h-4 mr-1" />
+                            {entry.volume} ml
+                          </td>
+                          <td className="text-center px-4 py-4">{new Date(entry.createdDate).toLocaleDateString("vi-VN")}</td>
+                          <td className="text-center px-4 py-4">{new Date(entry.expiredDate).toLocaleDateString("vi-VN")}</td>
+                          <td className="text-center px-4 py-4">{getStatusBadge(entry.status)}</td>
+                          <td className="text-center px-4 py-4">
+                            <button onClick={() => setExpandedRowId(expandedRowId === entry.id ? null : entry.id)}>
+                              <MoreHorizontal className="w-5 h-5 text-gray-500 hover:text-black" />
+                            </button>
+                          </td>
+                        </tr>
+
+                        {expandedRowId === entry.id && (
+                          <tr className="bg-gray-50">
+                            <td colSpan={7} className="px-6 py-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <p><strong>Giới tính:</strong> {donor?.gender ? "Nam" : "Nữ"}</p>
+                                  <p><strong>Tuổi:</strong> {donor?.age || "-"}</p>
+                                  <p><strong>Email:</strong> {donor?.email}</p>
+                                  <p><strong>Địa chỉ:</strong> {donor?.addresss}</p>
+                                  <p><strong>Mô tả:</strong> {entry.bloodDonate?.description || "-"}</p>
+                                </div>
+                                <div className="flex gap-4">
+                                  <div className="flex-1">
+                                    <img src={donor?.frontUrlIdentity} alt="CCCD mặt trước" className="w-full max-h-[250px] object-contain border rounded" />
+                                    <p className="text-sm text-center mt-1">CCCD mặt trước</p>
+                                  </div>
+                                  <div className="flex-1">
+                                    <img src={donor?.backUrlIdentity} alt="CCCD mặt sau" className="w-full max-h-[250px] object-contain border rounded" />
+                                    <p className="text-sm text-center mt-1">CCCD mặt sau</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {/* Pagination */}
+              <div className="flex justify-between items-center p-4">
+                <button
+                  disabled={pageIndex === 0}
+                  onClick={() => setPageIndex(pageIndex - 1)}
+                  className="px-4 py-2 border rounded disabled:opacity-50"
+                >
+                  Trước
+                </button>
+                <span>
+                  Trang {pageIndex + 1} / {Math.ceil(filteredData.length / pageSize)}
+                </span>
+                <button
+                  disabled={(pageIndex + 1) * pageSize >= filteredData.length}
+                  onClick={() => setPageIndex(pageIndex + 1)}
+                  className="px-4 py-2 border rounded disabled:opacity-50"
+                >
+                  Sau
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

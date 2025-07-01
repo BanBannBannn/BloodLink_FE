@@ -25,10 +25,6 @@ export default function BloodCheckFormModal({ donation, onClose }: { donation: a
         axiosInstance.get("/blood-groups")
             .then(res => setBloodGroups(res.data))
             .catch(() => setError("Không tải được danh sách nhóm máu"));
-
-        // if (donation.bloodDonationRequest?.bloodGroupId) {
-        //     setSelectedGroup(donation.bloodDonationRequest.bloodGroupId);
-        // }
     }, [donation]);
 
     const handleChange = (key: string, value: string) => {
