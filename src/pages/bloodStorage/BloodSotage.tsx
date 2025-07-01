@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { BloodStorageStatus } from "@/constants/constants";
 import { MoreHorizontal } from "lucide-react";
+import BloodStorageDashboard from "./blood-storage-dashboard";
 
 export default function BloodStorageTable() {
   const [data, setData] = useState<any[]>([]);
@@ -27,11 +28,16 @@ export default function BloodStorageTable() {
 
   const getStatusColorClass = (status: number) => {
     switch (status) {
-      case 0: return "text-yellow-600";
-      case 1: return "text-green-600";
-      case 2: return "text-red-600";
-      case 3: return "text-orange-600";
-      default: return "";
+      case 0:
+        return "text-yellow-600";
+      case 1:
+        return "text-green-600";
+      case 2:
+        return "text-red-600";
+      case 3:
+        return "text-orange-600";
+      default:
+        return "";
     }
   };
 
@@ -55,11 +61,18 @@ export default function BloodStorageTable() {
   }, []);
 
   const filteredData = data.filter((item) => {
-    const fullName = item.bloodDonate?.bloodDonationRequest?.fullName?.toLowerCase() || "";
-    const statusMatch = statusFilter === "all" || String(item.status) === statusFilter;
+    const fullName =
+      item.bloodDonate?.bloodDonationRequest?.fullName?.toLowerCase() || "";
+    const statusMatch =
+      statusFilter === "all" || String(item.status) === statusFilter;
     const bloodGroupId = item.bloodGroupId;
-    const bloodTypeMatch = bloodTypeFilter === "all" || bloodGroupId === bloodTypeFilter;
-    return fullName.includes(searchQuery.toLowerCase()) && statusMatch && bloodTypeMatch;
+    const bloodTypeMatch =
+      bloodTypeFilter === "all" || bloodGroupId === bloodTypeFilter;
+    return (
+      fullName.includes(searchQuery.toLowerCase()) &&
+      statusMatch &&
+      bloodTypeMatch
+    );
   });
 
   const paginatedData = filteredData.slice(
@@ -69,8 +82,7 @@ export default function BloodStorageTable() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Danh sách máu lưu trữ</h1>
-
+      <BloodStorageDashboard />
       <div className="flex gap-4 mb-4">
         <Input
           placeholder="Tìm theo tên..."
@@ -86,7 +98,9 @@ export default function BloodStorageTable() {
           <SelectContent>
             <SelectItem value="all">Tất cả nhóm máu</SelectItem>
             {bloodGroups.map((group: any) => (
-              <SelectItem key={group.id} value={group.id}>{group.displayName}</SelectItem>
+              <SelectItem key={group.id} value={group.id}>
+                {group.displayName}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -98,7 +112,9 @@ export default function BloodStorageTable() {
           <SelectContent>
             <SelectItem value="all">Tất cả trạng thái</SelectItem>
             {BloodStorageStatus.map((label, index) => (
-              <SelectItem key={index} value={index.toString()}>{label}</SelectItem>
+              <SelectItem key={index} value={index.toString()}>
+                {label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -127,18 +143,28 @@ export default function BloodStorageTable() {
             <tbody>
               {paginatedData.map((entry, idx) => {
                 const donor = entry.bloodDonate?.bloodDonationRequest;
-                const createdDate = new Date(entry.createdDate).toLocaleDateString("vi-VN");
-                const expiredDate = new Date(entry.expiredDate).toLocaleDateString("vi-VN");
-                const bloodGroupName = bloodGroups.find(bg => bg.id === entry.bloodGroupId)?.displayName || "-";
+                const createdDate = new Date(
+                  entry.createdDate
+                ).toLocaleDateString("vi-VN");
+                const expiredDate = new Date(
+                  entry.expiredDate
+                ).toLocaleDateString("vi-VN");
+                const bloodGroupName =
+                  bloodGroups.find((bg) => bg.id === entry.bloodGroupId)
+                    ?.displayName || "-";
 
                 return (
                   <React.Fragment key={entry.id}>
                     <tr className="border-t text-center">
-                      <td className="p-2">{entry.code || `${pageIndex * pageSize + idx + 1}`}</td>
+                      <td className="p-2">
+                        {entry.code || `${pageIndex * pageSize + idx + 1}`}
+                      </td>
                       <td className="p-2">{donor?.fullName || "-"}</td>
                       <td className="p-2">{bloodGroupName}</td>
                       <td className="p-2">{entry.volume} ml</td>
-                      <td className="p-2">{entry.bloodComponent?.name || "-"}</td>
+                      <td className="p-2">
+                        {entry.bloodComponent?.name || "-"}
+                      </td>
                       <td className="p-2">{createdDate}</td>
                       <td className="p-2">{expiredDate}</td>
                       <td className="p-2 font-semibold">
@@ -147,7 +173,13 @@ export default function BloodStorageTable() {
                         </span>
                       </td>
                       <td className="p-2">
-                        <button onClick={() => setExpandedRowId(expandedRowId === entry.id ? null : entry.id)}>
+                        <button
+                          onClick={() =>
+                            setExpandedRowId(
+                              expandedRowId === entry.id ? null : entry.id
+                            )
+                          }
+                        >
                           <MoreHorizontal className="w-5 h-5" />
                         </button>
                       </td>
@@ -158,12 +190,26 @@ export default function BloodStorageTable() {
                         <td colSpan={9} className="p-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <p><strong>Họ tên:</strong> {donor?.fullName}</p>
-                              <p><strong>Giới tính:</strong> {donor?.gender ? "Nam" : "Nữ"}</p>
-                              <p><strong>Tuổi:</strong> {donor?.age || "-"}</p>
-                              <p><strong>Email:</strong> {donor?.email}</p>
-                              <p><strong>Địa chỉ:</strong> {donor?.addresss}</p>
-                              <p><strong>Mô tả:</strong> {entry.bloodDonate?.description || "-"}</p>
+                              <p>
+                                <strong>Họ tên:</strong> {donor?.fullName}
+                              </p>
+                              <p>
+                                <strong>Giới tính:</strong>{" "}
+                                {donor?.gender ? "Nam" : "Nữ"}
+                              </p>
+                              <p>
+                                <strong>Tuổi:</strong> {donor?.age || "-"}
+                              </p>
+                              <p>
+                                <strong>Email:</strong> {donor?.email}
+                              </p>
+                              <p>
+                                <strong>Địa chỉ:</strong> {donor?.addresss}
+                              </p>
+                              <p>
+                                <strong>Mô tả:</strong>{" "}
+                                {entry.bloodDonate?.description || "-"}
+                              </p>
                             </div>
                             <div className="flex gap-4">
                               {donor?.frontUrlIdentity ? (
@@ -173,10 +219,14 @@ export default function BloodStorageTable() {
                                     alt="CCCD mặt trước"
                                     className="w-full max-h-[250px] object-contain border rounded"
                                   />
-                                  <p className="text-sm text-center mt-1">CCCD mặt trước</p>
+                                  <p className="text-sm text-center mt-1">
+                                    CCCD mặt trước
+                                  </p>
                                 </div>
                               ) : (
-                                <p className="text-sm text-center text-red-500">Không có ảnh CCCD mặt trước</p>
+                                <p className="text-sm text-center text-red-500">
+                                  Không có ảnh CCCD mặt trước
+                                </p>
                               )}
 
                               {donor?.backUrlIdentity ? (
@@ -186,10 +236,14 @@ export default function BloodStorageTable() {
                                     alt="CCCD mặt sau"
                                     className="w-full max-h-[250px] object-contain border rounded"
                                   />
-                                  <p className="text-sm text-center mt-1">CCCD mặt sau</p>
+                                  <p className="text-sm text-center mt-1">
+                                    CCCD mặt sau
+                                  </p>
                                 </div>
                               ) : (
-                                <p className="text-sm text-center text-red-500">Không có ảnh CCCD mặt sau</p>
+                                <p className="text-sm text-center text-red-500">
+                                  Không có ảnh CCCD mặt sau
+                                </p>
                               )}
                             </div>
                           </div>
@@ -211,7 +265,8 @@ export default function BloodStorageTable() {
               Trước
             </button>
             <span>
-              Trang {pageIndex + 1} / {Math.ceil(filteredData.length / pageSize) || 1}
+              Trang {pageIndex + 1} /{" "}
+              {Math.ceil(filteredData.length / pageSize) || 1}
             </span>
             <button
               disabled={(pageIndex + 1) * pageSize >= filteredData.length}
