@@ -18,8 +18,10 @@ export default function BloodRawTable() {
   const [selectedDonation, setSelectedDonation] = useState<any | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "1" |  "3">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "1" | "0" | "3">("all");
   const [pageIndex, setPageIndex] = useState(0);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const pageSize = 5;
 
   const filteredData = data.filter((entry) => {
@@ -45,12 +47,34 @@ export default function BloodRawTable() {
         </span>
       );
     }
+    if (status === 0) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+          <TestTube className="w-3 h-3 mr-1" />
+          Đang kiểm tra
+        </span>
+      );
+    }
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
         <Calendar className="w-3 h-3 mr-1" />
         Chưa kiểm tra
       </span>
     );
+  };
+
+
+  const handleOpenForm = async (entry: any) => {
+    setProcessingId(entry.id);
+    setAlertMessage(null);
+    try {
+      setSelectedDonation(entry);
+    } catch (err: any) {
+      const msg = err.response?.data?.title || "Có lỗi xảy ra khi mở form!";
+      setAlertMessage(msg);
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   return (
@@ -82,7 +106,7 @@ export default function BloodRawTable() {
               <Select
                 value={statusFilter}
                 onValueChange={(val) => {
-                  setStatusFilter(val as "all" | "1" | "3");
+                  setStatusFilter(val as "all" | "1" | "0" | "3");
                   setPageIndex(0);
                 }}
               >
@@ -92,6 +116,7 @@ export default function BloodRawTable() {
                 <SelectContent>
                   <SelectItem value="all">Tất cả trạng thái</SelectItem>
                   <SelectItem value="1">Chưa kiểm tra</SelectItem>
+                  <SelectItem value="0">Đang kiểm tra</SelectItem>
                   <SelectItem value="3">Đã kiểm tra</SelectItem>
                 </SelectContent>
               </Select>
@@ -99,7 +124,7 @@ export default function BloodRawTable() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{filteredData.length}</div>
               <div className="text-sm text-gray-600">Tổng mẫu máu</div>
@@ -109,6 +134,12 @@ export default function BloodRawTable() {
                 {filteredData.filter(d => d.status === 1).length}
               </div>
               <div className="text-sm text-gray-600">Chưa kiểm tra</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">
+                {filteredData.filter(d => d.status === 0).length}
+              </div>
+              <div className="text-sm text-gray-600">Đang kiểm tra</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
@@ -123,6 +154,13 @@ export default function BloodRawTable() {
           <Alert variant="destructive" className="mb-6">
             <AlertTitle>Có lỗi xảy ra</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {alertMessage && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Lỗi</AlertTitle>
+            <AlertDescription>{alertMessage}</AlertDescription>
           </Alert>
         )}
 
@@ -183,12 +221,16 @@ export default function BloodRawTable() {
                         {/* Actions */}
                         <td className="text-center px-4 py-4">
                           <div className="flex justify-center items-center gap-2">
-                            {entry.status === 0 && (
+                            {entry.status === 1 && (
                               <button
-                                onClick={() => setSelectedDonation(entry)}
-                                className="px-3 py-1 border border-blue-500 text-blue-600 rounded hover:bg-blue-50 text-xs font-medium"
+                                onClick={() => handleOpenForm(entry)}
+                                disabled={processingId === entry.id}
+                                className={`px-3 py-1 text-xs font-medium rounded ${processingId === entry.id
+                                  ? "border-gray-400 text-gray-400 cursor-not-allowed opacity-50"
+                                  : "border border-blue-500 text-blue-600 hover:bg-blue-50"
+                                  }`}
                               >
-                                Điền form
+                                {processingId === entry.id ? "Đang mở..." : "Điền form"}
                               </button>
                             )}
                             <button

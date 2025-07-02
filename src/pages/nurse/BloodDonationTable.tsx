@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { MoreHorizontal } from "lucide-react";
 import { bloodTypes } from "@/constants/constants";
 import BloodDonationHistoryDashboard from "./blood-donation-history-dashboard";
+import BloodStatisticsDashboard from "./blood-statistics-dashboard";
 
 export default function BloodDonationTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,6 +45,7 @@ export default function BloodDonationTable() {
     return nameMatch && statusMatch;
   });
 
+
   const paginatedData = filteredData.slice(
     pageIndex * pageSize,
     (pageIndex + 1) * pageSize
@@ -52,8 +54,8 @@ export default function BloodDonationTable() {
   return (
     <div>
       {/* <h1 className="text-2xl font-bold mb-4">Danh sách hiến máu</h1> */}
-      <BloodDonationHistoryDashboard />
-      {/* Filters */}
+      <BloodDonationHistoryDashboard /> 
+         {/* Filters */}
       <div className="flex gap-4 mb-4">
         <Input
           placeholder="Tìm theo tên..."
@@ -118,19 +120,18 @@ export default function BloodDonationTable() {
                     </td>
                     <td className="p-2">{item.volume} ml</td>
                     <td
-                      className={`p-2 capitalize ${
-                        item.status === 0
+                      className={`p-2 capitalize ${item.status === 0
                           ? "text-yellow-600"
                           : item.status === 1
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
                     >
                       {item.status === 0
                         ? "Đang hiến máu"
                         : item.status === 1
-                        ? "Đã hiến máu"
-                        : "Hủy"}
+                          ? "Đã hiến máu"
+                          : "Hủy"}
                     </td>
                     <td className="p-2 flex justify-center gap-2">
                       {item.status === 0 && (

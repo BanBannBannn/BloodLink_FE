@@ -88,6 +88,9 @@ export default function BloodDonationRequestsTable() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      {/* Make By Bân */}
+      <BloodStatisticsDashboard />
+
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Yêu cầu hiến máu</h1>

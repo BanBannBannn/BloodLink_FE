@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
   Search,
 } from "lucide-react";
+import BloodStorageDashboard from "./blood-storage-dashboard";
 
 export default function BloodStorageTable() {
   const [data, setData] = useState<any[]>([]);
@@ -27,8 +28,15 @@ export default function BloodStorageTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
+  const [componentFilter, setComponentFilter] = useState("all");
   const [pageIndex, setPageIndex] = useState(0);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [preparingEntry, setPreparingEntry] = useState<any | null>(null);
+  const [bloodComponents, setBloodComponents] = useState<any[]>([]);
+  const [prepareVolume, setPrepareVolume] = useState<number>(0);
+  const [selectedComponentId, setSelectedComponentId] = useState<string>("");
   const pageSize = 10;
 
   useEffect(() => {
@@ -58,10 +66,14 @@ export default function BloodStorageTable() {
     const bloodGroupId = item.bloodGroupId;
     const bloodTypeMatch =
       bloodTypeFilter === "all" || bloodGroupId === bloodTypeFilter;
+    const componentMatch =
+      componentFilter === "all" || item.bloodComponent?.name === componentFilter;
+
     return (
       fullName.includes(searchQuery.toLowerCase()) &&
       statusMatch &&
-      bloodTypeMatch
+      bloodTypeMatch &&
+      componentMatch
     );
   });
 
@@ -82,11 +94,36 @@ export default function BloodStorageTable() {
     );
   };
 
+  const handleToggleRow = async (id: string) => {
+    setProcessingId(id);
+    setAlertMessage(null);
+    try {
+      // await axiosInstance.get(`/blood-storage/${id}`);
+      setExpandedRowId(expandedRowId === id ? null : id);
+    } catch (err: any) {
+      setAlertMessage(err.response?.data?.title || "Có lỗi khi xử lý yêu cầu.");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handlePrepare = async (entry: any) => {
+    try {
+      const res = await axiosInstance.get("/blood-components");
+      setBloodComponents(res.data || []);
+      setPreparingEntry(entry);
+      setPrepareVolume(0);
+      setSelectedComponentId("");
+    } catch {
+      setAlertMessage("Không thể tải danh sách loại chế phẩm.");
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      <BloodStorageDashboard />
+
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Kho máu</h1>
-        <p className="text-gray-600 mb-6">Quản lý danh sách máu đã lưu trữ từ người hiến máu</p>
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
@@ -139,10 +176,29 @@ export default function BloodStorageTable() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Select value={componentFilter} onValueChange={(val) => {
+                setComponentFilter(val);
+                setPageIndex(0);
+              }}>
+                <SelectTrigger className="w-48 pl-10">
+                  <SelectValue placeholder="Lọc loại chế phẩm" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả loại chế phẩm</SelectItem>
+                  {[...new Set(data.map((d) => d.bloodComponent?.name).filter(Boolean))].map((name, idx) => (
+                    <SelectItem key={idx} value={name}>{name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {alertMessage && <p className="text-red-500 mb-4">{alertMessage}</p>}
 
         {/* Table */}
         <div className="bg-white shadow-sm rounded-lg border">
@@ -153,8 +209,9 @@ export default function BloodStorageTable() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-100 text-gray-700 font-semibold">
                   <tr>
-                    <th className="text-left px-6 py-3">Thông tin</th>
+                    <th className="text-left px-6 py-3">Mã</th>
                     <th className="text-center px-4 py-3">Nhóm máu</th>
+                    <th className="text-center px-4 py-3">Loại chế phẩm</th>
                     <th className="text-center px-4 py-3">Thể tích</th>
                     <th className="text-center px-4 py-3">Ngày tạo</th>
                     <th className="text-center px-4 py-3">Ngày hết hạn</th>
@@ -169,9 +226,8 @@ export default function BloodStorageTable() {
                     return (
                       <React.Fragment key={entry.id}>
                         <tr className="border-t hover:bg-gray-50 transition">
-                          <td className="px-6 py-4">
-                            <div className="font-medium">{donor?.fullName || "-"}</div>
-                            <div className="text-xs text-gray-500">Mã: {entry.code}</div>
+                          <td className="px-6 py-4 font-medium text-gray-900">
+                            {entry.code || "-"}
                           </td>
                           <td className="text-center px-4 py-4">
                             <span className="inline-flex items-center gap-1 text-red-600 font-semibold">
@@ -180,22 +236,42 @@ export default function BloodStorageTable() {
                             </span>
                           </td>
                           <td className="text-center px-4 py-4 text-gray-700">
+                            {entry.bloodComponent?.name || "-"}
+                          </td>
+                          <td className="text-center px-4 py-4 text-gray-700">
                             <Droplets className="inline w-4 h-4 mr-1" />
                             {entry.volume} ml
                           </td>
                           <td className="text-center px-4 py-4">{new Date(entry.createdDate).toLocaleDateString("vi-VN")}</td>
                           <td className="text-center px-4 py-4">{new Date(entry.expiredDate).toLocaleDateString("vi-VN")}</td>
                           <td className="text-center px-4 py-4">{getStatusBadge(entry.status)}</td>
-                          <td className="text-center px-4 py-4">
-                            <button onClick={() => setExpandedRowId(expandedRowId === entry.id ? null : entry.id)}>
-                              <MoreHorizontal className="w-5 h-5 text-gray-500 hover:text-black" />
+                          <td className="text-center px-4 py-4 flex justify-center gap-2">
+                            {entry.bloodComponent?.name === "Máu toàn phần" && (
+                              <button
+                                onClick={() => handlePrepare(entry)}
+                                className="px-3 py-1 text-xs border border-purple-500 text-purple-600 rounded hover:bg-purple-50"
+                              >
+                                Điều chế
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleToggleRow(entry.id)}
+                              disabled={processingId === entry.id}
+                              className={`px-2 py-1 rounded ${processingId === entry.id
+                                  ? "cursor-not-allowed opacity-50"
+                                  : "hover:bg-gray-100"
+                                }`}
+                            >
+                              {processingId === entry.id ? "Đang xử lý..." : (
+                                <MoreHorizontal className="w-5 h-5 text-gray-500 hover:text-black" />
+                              )}
                             </button>
                           </td>
                         </tr>
 
                         {expandedRowId === entry.id && (
                           <tr className="bg-gray-50">
-                            <td colSpan={7} className="px-6 py-4">
+                            <td colSpan={8} className="px-6 py-4">
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <p><strong>Giới tính:</strong> {donor?.gender ? "Nam" : "Nữ"}</p>
@@ -247,6 +323,70 @@ export default function BloodStorageTable() {
             </>
           )}
         </div>
+
+        {/* Modal điều chế */}
+        {preparingEntry && (
+          <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
+            <div className="bg-white p-6 rounded-lg w-[400px]">
+              <h2 className="text-lg font-bold mb-4">Điều chế từ {preparingEntry.code}</h2>
+
+              <div className="mb-3">
+                <label className="block mb-1">Chọn loại chế phẩm</label>
+                <select
+                  value={selectedComponentId}
+                  onChange={(e) => setSelectedComponentId(e.target.value)}
+                  className="w-full border rounded px-2 py-1"
+                >
+                  <option value="">-- Chọn loại chế phẩm --</option>
+                  {bloodComponents.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-3">
+                <label className="block mb-1">Thể tích điều chế (ml)</label>
+                <Input
+                  type="number"
+                  value={prepareVolume}
+                  onChange={(e) => setPrepareVolume(parseInt(e.target.value))}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  onClick={() => setPreparingEntry(null)}
+                  className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!selectedComponentId || prepareVolume <= 0) {
+                      setAlertMessage("Vui lòng chọn loại chế phẩm và nhập thể tích hợp lệ.");
+                      return;
+                    }
+                    try {
+                      await axiosInstance.post(`/blood-storage/blood-preparation/${preparingEntry.id}`, {
+                        bloodComponentId: selectedComponentId,
+                        volume: prepareVolume,
+                      });
+                      setAlertMessage("Điều chế thành công!");
+                      setPreparingEntry(null);
+                      setPageIndex(0);
+                      setExpandedRowId(null);
+                    } catch (err: any) {
+                      setAlertMessage(err.response?.data?.title || "Điều chế thất bại!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                >
+                  Xác nhận
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
