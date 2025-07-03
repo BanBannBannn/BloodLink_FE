@@ -247,9 +247,9 @@ export default function BloodRawTable() {
 
                       {/* Expandable row */}
                       {expandedRowId === entry.id && (
-                        <tr className="bg-gray-50 text-left">
-                          <td colSpan={6} className="px-6 py-4">
-                            <div className="space-y-4">
+                        <tr className="bg-gray-50">
+                          <td colSpan={8} className="px-6 py-4">
+                            <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <h3 className="text-sm font-semibold mb-2 text-gray-700 flex items-center">
                                   🧾 Chi tiết thông tin
@@ -257,19 +257,18 @@ export default function BloodRawTable() {
                                 <p><strong>Họ tên:</strong> {entry.bloodDonationRequest?.fullName}</p>
                                 <p><strong>Giới tính:</strong> {entry.bloodDonationRequest?.gender ? "Nam" : "Nữ"}</p>
                                 <p><strong>Tuổi:</strong> {entry.bloodDonationRequest?.healthCheckForm?.age || "-"}</p>
+                                <p><strong>SDT:</strong> {entry.bloodDonationRequest?.phoneNo}</p>
                                 <p><strong>Email:</strong> {entry.bloodDonationRequest?.email}</p>
+                                <p><strong>Số cccd:</strong> {entry.bloodDonationRequest?.identityId}</p>
                                 <p><strong>Địa chỉ:</strong> {entry.bloodDonationRequest?.addresss}</p>
-                              </div>
-
-                              <div>
-                                <h3 className="text-sm font-semibold mb-2 text-gray-700">📌 Ghi chú</h3>
-                                <div className="bg-blue-50 text-blue-800 text-sm rounded p-2">
-                                  {entry.description || "Không có ghi chú"}
+                                <div>
+                                  <h3 className="text-sm font-semibold mb-2 text-gray-700">📌 Ghi chú</h3>
+                                  <p> <strong>{entry.bloodDonationRequest?.description}</strong></p>
                                 </div>
                               </div>
 
                               <div>
-                                <h3 className="text-sm font-semibold mb-2 text-gray-700">🪪 Hình ảnh CCCD</h3>
+                                <h3 className="text-sm font-semibold mb-2 text-gray-700"> Hình ảnh CCCD</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                   <div>
                                     <img
@@ -292,6 +291,7 @@ export default function BloodRawTable() {
                             </div>
                           </td>
                         </tr>
+
                       )}
                     </React.Fragment>
                   ))}
@@ -333,6 +333,6 @@ export default function BloodRawTable() {
           />
         )}
       </div>
-    </div>
+    </div >
   );
 }

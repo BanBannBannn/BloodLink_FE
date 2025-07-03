@@ -8,6 +8,15 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { BloodStorageStatus } from "@/constants/constants";
 import {
   Calendar,
@@ -98,7 +107,6 @@ export default function BloodStorageTable() {
     setProcessingId(id);
     setAlertMessage(null);
     try {
-      // await axiosInstance.get(`/blood-storage/${id}`);
       setExpandedRowId(expandedRowId === id ? null : id);
     } catch (err: any) {
       setAlertMessage(err.response?.data?.title || "Có lỗi khi xử lý yêu cầu.");
@@ -108,6 +116,7 @@ export default function BloodStorageTable() {
   };
 
   const handlePrepare = async (entry: any) => {
+    setAlertMessage(null);
     try {
       const res = await axiosInstance.get("/blood-components");
       setBloodComponents(res.data || []);
@@ -197,8 +206,30 @@ export default function BloodStorageTable() {
           </div>
         </div>
 
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        {alertMessage && <p className="text-red-500 mb-4">{alertMessage}</p>}
+        {/* AlertDialogs */}
+        <AlertDialog open={!!error} onOpenChange={(open: any) => !open && setError(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Lỗi</AlertDialogTitle>
+              <AlertDialogDescription>{error}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setError(null)}>Đóng</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={!!alertMessage} onOpenChange={(open: any) => !open && setAlertMessage(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Thông báo</AlertDialogTitle>
+              <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setAlertMessage(null)}>Đóng</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Table */}
         <div className="bg-white shadow-sm rounded-lg border">
@@ -246,20 +277,20 @@ export default function BloodStorageTable() {
                           <td className="text-center px-4 py-4">{new Date(entry.expiredDate).toLocaleDateString("vi-VN")}</td>
                           <td className="text-center px-4 py-4">{getStatusBadge(entry.status)}</td>
                           <td className="text-center px-4 py-4 flex justify-center gap-2">
-                            {entry.bloodComponent?.name === "Máu toàn phần" && (
+                            {entry.bloodComponent?.name === "Máu toàn phần" && entry.status === 1 && (
                               <button
                                 onClick={() => handlePrepare(entry)}
-                                className="px-3 py-1 text-xs border border-purple-500 text-purple-600 rounded hover:bg-purple-50"
+                                className="ml-2 px-3 py-1 text-xs border border-green-500 text-green-600 rounded hover:bg-green-50"
                               >
-                                Điều chế
+                                Điền form
                               </button>
                             )}
                             <button
                               onClick={() => handleToggleRow(entry.id)}
                               disabled={processingId === entry.id}
                               className={`px-2 py-1 rounded ${processingId === entry.id
-                                  ? "cursor-not-allowed opacity-50"
-                                  : "hover:bg-gray-100"
+                                ? "cursor-not-allowed opacity-50"
+                                : "hover:bg-gray-100"
                                 }`}
                             >
                               {processingId === entry.id ? "Đang xử lý..." : (
@@ -274,8 +305,11 @@ export default function BloodStorageTable() {
                             <td colSpan={8} className="px-6 py-4">
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
+                                  <p><strong>Họ tên:</strong> {donor?.fullName}</p>
                                   <p><strong>Giới tính:</strong> {donor?.gender ? "Nam" : "Nữ"}</p>
                                   <p><strong>Tuổi:</strong> {donor?.age || "-"}</p>
+                                  <p><strong>SĐT:</strong> {donor?.phoneNo}</p>
+                                  <p><strong>Số CCCD:</strong> {donor?.identityId}</p>
                                   <p><strong>Email:</strong> {donor?.email}</p>
                                   <p><strong>Địa chỉ:</strong> {donor?.addresss}</p>
                                   <p><strong>Mô tả:</strong> {entry.bloodDonate?.description || "-"}</p>
@@ -375,6 +409,7 @@ export default function BloodStorageTable() {
                       setPreparingEntry(null);
                       setPageIndex(0);
                       setExpandedRowId(null);
+                      window.location.reload();
                     } catch (err: any) {
                       setAlertMessage(err.response?.data?.title || "Điều chế thất bại!");
                     }

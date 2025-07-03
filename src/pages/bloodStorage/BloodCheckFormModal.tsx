@@ -42,6 +42,7 @@ export default function BloodCheckFormModal({ donation, onClose }: { donation: a
 
             alert("Gửi phiếu kiểm tra thành công!");
             onClose();
+            window.location.reload();
         } catch (err: any) {
             setError(err.response?.data?.title || "Gửi thất bại!");
         }
