@@ -236,6 +236,7 @@ function BloodDonation() {
                               </PopoverContent>
                             </Popover>
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -325,7 +326,12 @@ function BloodDonation() {
                       <Button
                         type="button"
                         className="w-full md:w-[200px] h-12 text-lg font-semibold float-right"
-                        onClick={() => setActiveStep(1)}
+                        onClick={async () => {
+                          const valid = await form1.trigger();
+                          if (valid) {
+                            setActiveStep(1);
+                          }
+                        }}
                       >
                         Tiếp tục
                       </Button>

@@ -39,7 +39,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const show = useCallback((message: string, type: keyof typeof TOAST_TYPES = 'info') => {
     const id = ++toastId.current;
     setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => remove(id), 3000);
+    setTimeout(() => remove(id), 2000);
   }, [remove]);
 
   const success = useCallback((msg: string) => show(msg, 'success'), [show]);

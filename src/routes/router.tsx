@@ -6,6 +6,9 @@ import BloodDonation from "@/pages/user/BloodDonation";
 import ProfilePage from "@/pages/user/Profile";
 import BloodDonationHistory from "@/pages/user/BloodDonationHistory";
 import FAQ from "@/pages/public/FAQ";
+import Blog from "@/pages/user/Blog";
+import PublicBlog from "@/pages/public/Blog";
+import BlogManagement from "@/pages/admin/BlogManagement";
 
 import AdminLayout from "@/layouts/AdminLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -71,6 +74,18 @@ export const router = createBrowserRouter([
         path: "/blood-donation-history",
         element: <BloodDonationHistory />,
       },
+      {
+        path: "/blogs",
+        element: <PublicBlog />,
+      },
+      {
+        path: "/user/blog",
+        element: (
+          <ProtectedRoute allowedRoles={["MEMBER"]}>
+            <Blog />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 
@@ -86,6 +101,7 @@ export const router = createBrowserRouter([
       { path: "member-management", element: <AccountManagement /> },
       { path: "nurse-management", element: <NurseManagement /> },
       { path: "supervisor-management", element: <SupervisorManagement /> },
+      { path: "blog-management", element: <BlogManagement /> },
     ],
   },
 

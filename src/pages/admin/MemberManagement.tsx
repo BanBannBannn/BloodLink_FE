@@ -22,7 +22,7 @@ import {
   LockKeyhole,
   Search,
   SquarePen,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -91,9 +91,11 @@ export default function AccountManagement() {
 
   return (
     <div className="p-6 h-full flex flex-col flex-1 space-y-6">
-      <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
-        Quản lí người dùng
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
+          Quản lí người dùng
+        </h1>
+      </div>
 
       <Card className="shadow-lg rounded-xl flex-1">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -104,7 +106,7 @@ export default function AccountManagement() {
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search users..."
+                placeholder="Tên người dùng..."
                 className="pl-8 w-[300px]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
