@@ -27,6 +27,7 @@ import {
   Search,
 } from "lucide-react";
 import BloodStorageDashboard from "./blood-storage-dashboard";
+import { getAllComponentId } from "@/api/summaryApi";
 
 export default function BloodStorageTable() {
   const [data, setData] = useState<any[]>([]);
@@ -52,12 +53,14 @@ export default function BloodStorageTable() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [bloodStorageRes, bloodGroupRes] = await Promise.all([
+        const [bloodStorageRes, bloodGroupRes, componentRes] = await Promise.all([
           axiosInstance.get("/blood-storage/search"),
           axiosInstance.get("/blood-groups"),
+          getAllComponentId(),
         ]);
         setData(bloodStorageRes.data.records || []);
         setBloodGroups(bloodGroupRes.data || []);
+        setAllComponents(componentRes.data || []);
       } catch (err) {
         setError("Không thể tải dữ liệu.");
       } finally {
@@ -85,6 +88,8 @@ export default function BloodStorageTable() {
       componentMatch
     );
   });
+  const [allComponents, setAllComponents] = useState<any[]>([]);
+
 
   const paginatedData = filteredData.slice(
     pageIndex * pageSize,
@@ -196,9 +201,9 @@ export default function BloodStorageTable() {
                   <SelectValue placeholder="Lọc loại chế phẩm" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả loại chế phẩm</SelectItem>
-                  {[...new Set(data.map((d) => d.bloodComponent?.name).filter(Boolean))].map((name, idx) => (
-                    <SelectItem key={idx} value={name}>{name}</SelectItem>
+                  <SelectItem value="all">Tất cả chế phẩm</SelectItem>
+                  {allComponents.map((comp) => (
+                    <SelectItem key={comp.id} value={comp.name}>{comp.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -243,11 +248,13 @@ export default function BloodStorageTable() {
                     <th className="text-left px-6 py-3">Mã</th>
                     <th className="text-center px-4 py-3">Nhóm máu</th>
                     <th className="text-center px-4 py-3">Loại chế phẩm</th>
+                    <th className="text-center px-4 py-3">Nhiệt độ bảo quản (℃)</th>
                     <th className="text-center px-4 py-3">Thể tích</th>
                     <th className="text-center px-4 py-3">Ngày tạo</th>
                     <th className="text-center px-4 py-3">Ngày hết hạn</th>
                     <th className="text-center px-4 py-3">Trạng thái</th>
                     <th className="text-center px-4 py-3">Chi tiết</th>
+
                   </tr>
                 </thead>
                 <tbody>
@@ -270,6 +277,11 @@ export default function BloodStorageTable() {
                             {entry.bloodComponent?.name || "-"}
                           </td>
                           <td className="text-center px-4 py-4 text-gray-700">
+                            {entry.bloodComponent?.minStorageTemerature != null && entry.bloodComponent?.maxStorageTemerature != null
+                              ? `${entry.bloodComponent.minStorageTemerature} - ${entry.bloodComponent.maxStorageTemerature} ℃`
+                              : ""}
+                          </td>
+                          <td className="text-center px-4 py-4 text-gray-700">
                             <Droplets className="inline w-4 h-4 mr-1" />
                             {entry.volume} ml
                           </td>
@@ -277,12 +289,12 @@ export default function BloodStorageTable() {
                           <td className="text-center px-4 py-4">{new Date(entry.expiredDate).toLocaleDateString("vi-VN")}</td>
                           <td className="text-center px-4 py-4">{getStatusBadge(entry.status)}</td>
                           <td className="text-center px-4 py-4 flex justify-center gap-2">
-                            {entry.bloodComponent?.name === "Máu toàn phần" && entry.status === 1 && (
+                            {entry.bloodComponent?.name === "Máu toàn phần" && (
                               <button
                                 onClick={() => handlePrepare(entry)}
-                                className="ml-2 px-3 py-1 text-xs border border-green-500 text-green-600 rounded hover:bg-green-50"
+                                className="ml-2 px-3 py-1 text-xs border border-blue-500 text-blue-600 rounded hover:bg-green-50"
                               >
-                                Điền form
+                                Tạo chế phẩm
                               </button>
                             )}
                             <button

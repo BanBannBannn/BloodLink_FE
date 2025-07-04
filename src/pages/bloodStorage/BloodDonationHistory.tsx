@@ -51,7 +51,7 @@ export default function BloodRawTable() {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
           <TestTube className="w-3 h-3 mr-1" />
-          Đang kiểm tra
+          Đang hiến máu
         </span>
       );
     }
@@ -115,8 +115,8 @@ export default function BloodRawTable() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                  <SelectItem value="0">Đang hiến máu</SelectItem>
                   <SelectItem value="1">Chưa kiểm tra</SelectItem>
-                  <SelectItem value="0">Đang kiểm tra</SelectItem>
                   <SelectItem value="3">Đã kiểm tra</SelectItem>
                 </SelectContent>
               </Select>
@@ -129,17 +129,17 @@ export default function BloodRawTable() {
               <div className="text-2xl font-bold text-blue-600">{filteredData.length}</div>
               <div className="text-sm text-gray-600">Tổng mẫu máu</div>
             </div>
+              <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">
+                {filteredData.filter(d => d.status === 0).length}
+              </div>
+              <div className="text-sm text-gray-600">Đang hiến máu</div>
+            </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">
                 {filteredData.filter(d => d.status === 1).length}
               </div>
               <div className="text-sm text-gray-600">Chưa kiểm tra</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">
-                {filteredData.filter(d => d.status === 0).length}
-              </div>
-              <div className="text-sm text-gray-600">Đang kiểm tra</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">

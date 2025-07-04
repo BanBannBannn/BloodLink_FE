@@ -95,10 +95,10 @@ export default function BloodDonationTable() {
           <table className="w-full border">
             <thead className="bg-gray-200">
               <tr>
-                <th className="p-2">Mã yêu cầu</th>
+                <th className="p-2">Mã</th>
                 <th className="p-2">Tên</th>
                 <th className="p-2">Nhóm máu</th>
-                <th className="p-2">Ngày yêu cầu</th>
+                <th className="p-2">Ngày hiến máu</th>
                 <th className="p-2">Thể tích</th>
                 <th className="p-2">Trạng thái</th>
                 <th className="p-2">Hành động</th>
