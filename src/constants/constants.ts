@@ -20,3 +20,28 @@ export const BloodStorageStatus =
     "Hết hạn",
     "Không đạt yêu cầu",
   ];
+
+export const hcmDistricts = [
+  "Quận 1, Thành phố Hồ Chí Minh",
+  "Quận 3, Thành phố Hồ Chí Minh",
+  "Quận 4, Thành phố Hồ Chí Minh",
+  "Quận 5, Thành phố Hồ Chí Minh",
+  "Quận 6, Thành phố Hồ Chí Minh",
+  "Quận 7, Thành phố Hồ Chí Minh",
+  "Quận 8, Thành phố Hồ Chí Minh",
+  "Quận 10, Thành phố Hồ Chí Minh",
+  "Quận 11, Thành phố Hồ Chí Minh",
+  "Quận 12, Thành phố Hồ Chí Minh",
+  "Quận Bình Thạnh, Thành phố Hồ Chí Minh",
+  "Quận Gò Vấp, Thành phố Hồ Chí Minh",
+  "Quận Phú Nhuận, Thành phố Hồ Chí Minh",
+  "Quận Tân Bình, Thành phố Hồ Chí Minh",
+  "Quận Tân Phú, Thành phố Hồ Chí Minh",
+  "Quận Bình Tân, Thành phố Hồ Chí Minh",
+  "Huyện Bình Chánh, Thành phố Hồ Chí Minh",
+  "Huyện Cần Giờ, Thành phố Hồ Chí Minh",
+  "Huyện Củ Chi, Thành phố Hồ Chí Minh",
+  "Huyện Hóc Môn, Thành phố Hồ Chí Minh",
+  "Huyện Nhà Bè, Thành phố Hồ Chí Minh",
+  "Thành phố Thủ Đức, Thành phố Hồ Chí Minh"
+];
