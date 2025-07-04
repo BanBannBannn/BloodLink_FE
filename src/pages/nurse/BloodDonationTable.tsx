@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { MoreHorizontal } from "lucide-react";
 import { bloodTypes } from "@/constants/constants";
+import BloodDonationHistoryDashboard from "./blood-donation-history-dashboard";
 
 export default function BloodDonationTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,8 +51,8 @@ export default function BloodDonationTable() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Danh sách hiến máu</h1>
-
+      {/* <h1 className="text-2xl font-bold mb-4">Danh sách hiến máu</h1> */}
+      <BloodDonationHistoryDashboard />
       {/* Filters */}
       <div className="flex gap-4 mb-4">
         <Input
@@ -63,10 +64,13 @@ export default function BloodDonationTable() {
           }}
           className="w-48"
         />
-        <Select value={statusFilter} onValueChange={(v) => {
-          setStatusFilter(v);
-          setPageIndex(0);
-        }}>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v);
+            setPageIndex(0);
+          }}
+        >
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Lọc theo trạng thái" />
           </SelectTrigger>
@@ -102,24 +106,31 @@ export default function BloodDonationTable() {
               {paginatedData.map((item, index) => (
                 <React.Fragment key={item.id}>
                   <tr className="border-t text-center">
-                    <td className="p-2">{item.code ||pageIndex * pageSize + index + 1}</td>
-                    <td className="p-2">{item.bloodDonationRequest?.fullName}</td>
+                    <td className="p-2">
+                      {item.code || pageIndex * pageSize + index + 1}
+                    </td>
+                    <td className="p-2">
+                      {item.bloodDonationRequest?.fullName}
+                    </td>
                     <td className="p-2">{bloodTypes[item.bloodType]}</td>
                     <td className="p-2">
                       {new Date(item.donationDate).toLocaleDateString("vi-VN")}
                     </td>
                     <td className="p-2">{item.volume} ml</td>
-                    <td className={`p-2 capitalize ${item.status === 0
-                      ? "text-yellow-600"
-                      : item.status === 1
-                        ? "text-green-600"
-                        : "text-red-600"
-                      }`}>
+                    <td
+                      className={`p-2 capitalize ${
+                        item.status === 0
+                          ? "text-yellow-600"
+                          : item.status === 1
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
                       {item.status === 0
                         ? "Đang hiến máu"
                         : item.status === 1
-                          ? "Đã hiến máu"
-                          : "Hủy"}
+                        ? "Đã hiến máu"
+                        : "Hủy"}
                     </td>
                     <td className="p-2 flex justify-center gap-2">
                       {item.status === 0 && (
@@ -143,7 +154,9 @@ export default function BloodDonationTable() {
                       <Button
                         variant="outline"
                         onClick={() =>
-                          setSelectedDetail(selectedDetail === item.id ? null : item.id)
+                          setSelectedDetail(
+                            selectedDetail === item.id ? null : item.id
+                          )
                         }
                       >
                         <MoreHorizontal size={16} />
@@ -156,32 +169,58 @@ export default function BloodDonationTable() {
                       <td colSpan={7} className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p><strong>Họ tên:</strong> {item.bloodDonationRequest?.fullName}</p>
-                            <p><strong>Giới tính:</strong> {item.bloodDonationRequest?.gender ? "Nam" : "Nữ"}</p>
-                            <p><strong>Tuổi:</strong> {item.bloodDonationRequest?.healthCheckForm?.age || "-"}</p>
-                            <p><strong>Email:</strong> {item.bloodDonationRequest?.email}</p>
-                            <p><strong>Địa chỉ:</strong> {item.bloodDonationRequest?.addresss}</p>
-                            <p><strong>Mô tả:</strong> {item.description}</p>
+                            <p>
+                              <strong>Họ tên:</strong>{" "}
+                              {item.bloodDonationRequest?.fullName}
+                            </p>
+                            <p>
+                              <strong>Giới tính:</strong>{" "}
+                              {item.bloodDonationRequest?.gender ? "Nam" : "Nữ"}
+                            </p>
+                            <p>
+                              <strong>Tuổi:</strong>{" "}
+                              {item.bloodDonationRequest?.healthCheckForm
+                                ?.age || "-"}
+                            </p>
+                            <p>
+                              <strong>Email:</strong>{" "}
+                              {item.bloodDonationRequest?.email}
+                            </p>
+                            <p>
+                              <strong>Địa chỉ:</strong>{" "}
+                              {item.bloodDonationRequest?.addresss}
+                            </p>
+                            <p>
+                              <strong>Mô tả:</strong> {item.description}
+                            </p>
                           </div>
                           <div className="flex gap-4">
                             {item.bloodDonationRequest?.frontUrlIdentity && (
                               <div className="flex-1">
                                 <img
-                                  src={item.bloodDonationRequest.frontUrlIdentity}
+                                  src={
+                                    item.bloodDonationRequest.frontUrlIdentity
+                                  }
                                   alt="CCCD mặt trước"
                                   className="w-full max-h-[250px] object-contain border rounded"
                                 />
-                                <p className="text-sm text-center mt-1">CCCD mặt trước</p>
+                                <p className="text-sm text-center mt-1">
+                                  CCCD mặt trước
+                                </p>
                               </div>
                             )}
                             {item.bloodDonationRequest?.backUrlIdentity && (
                               <div className="flex-1">
                                 <img
-                                  src={item.bloodDonationRequest.backUrlIdentity}
+                                  src={
+                                    item.bloodDonationRequest.backUrlIdentity
+                                  }
                                   alt="CCCD mặt sau"
                                   className="w-full max-h-[250px] object-contain border rounded"
                                 />
-                                <p className="text-sm text-center mt-1">CCCD mặt sau</p>
+                                <p className="text-sm text-center mt-1">
+                                  CCCD mặt sau
+                                </p>
                               </div>
                             )}
                           </div>
@@ -204,7 +243,8 @@ export default function BloodDonationTable() {
               Trước
             </button>
             <span>
-              Trang {pageIndex + 1} / {Math.ceil(filteredData.length / pageSize) || 1}
+              Trang {pageIndex + 1} /{" "}
+              {Math.ceil(filteredData.length / pageSize) || 1}
             </span>
             <button
               disabled={(pageIndex + 1) * pageSize >= filteredData.length}
@@ -216,7 +256,6 @@ export default function BloodDonationTable() {
           </div>
         </>
       )}
-
     </div>
   );
 }
