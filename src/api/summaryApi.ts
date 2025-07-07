@@ -49,6 +49,12 @@ export interface BloodVolumeStatistics {
   expiredVolume: number;
 }
 
+export interface SupvisorBloodDonationHistoryStatistics {
+  total: number
+  inProgress: number
+  donated: number
+  checked: number
+}
 export const bloodRequestSummary = async (range : number = 0) => {
   const response = await apiClient.get(
     `/blood-donation-requests/summary?range=${range}`
@@ -83,3 +89,7 @@ export const bloodStorangeSummary = async (bloodGroupId : string | null, compone
   return response;
 };
 
+export const getSupervisorDonationSummary = async (range = 0) => {
+  const response = await apiClient.get(`/blood-donations/supvisor-summary?range=${range}`)
+  return response
+}
