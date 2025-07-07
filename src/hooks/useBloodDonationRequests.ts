@@ -2,17 +2,23 @@ import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 
 export interface BloodDonationRequest {
+  medicalDeclarationForm(medicalDeclarationForm: any): void;
   id: string;
   code: string;
   fullName: string;
   bloodType: number;
   status: number;
+  phoneNo?: string;
+  email?: string;
   donatedDateRequest: string;
   reasonReject?: string;
   gender?: boolean;
+  description?: string;
+  addresss?: string;
   frontUrlIdentity?: string;
   backUrlIdentity?: string;
   age?: number;
+  
   identityId?: string;
   healthCheckForm?: {
     note?: string;

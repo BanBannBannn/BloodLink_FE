@@ -3,6 +3,7 @@ import apiClient from "@/api/apiClient";
 // import { ReactNode } from "react";
 
 export interface BloodDonation {
+  code: number;
   // [x: string]: number;
   bloodDonationRequest: {
     code: string;
