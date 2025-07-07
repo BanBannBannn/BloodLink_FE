@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MoreHorizontal } from "lucide-react";
+import SupervisorDonationSummaryDashboard from "./donation-summary-dashboard";
 
 export default function BloodRawTable() {
   const { data, loading, error, refresh } = useBloodHistory();
@@ -35,11 +36,11 @@ export default function BloodRawTable() {
     pageIndex * pageSize,
     (pageIndex + 1) * pageSize
   );
-  
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Lịch sử nhận máu</h1>
-
+      <SupervisorDonationSummaryDashboard />
       <div className="flex gap-4 mb-4">
         <Input
           placeholder="Tìm theo tên..."
@@ -96,12 +97,20 @@ export default function BloodRawTable() {
                 <React.Fragment key={entry.id}>
                   <tr className="border-t text-center">
                     <td className="p-2">{entry.code || `${idx + 1}`}</td>
-                    <td className="p-2">{bloodTypes[entry.bloodType] || "-"}</td>
+                    <td className="p-2">
+                      {bloodTypes[entry.bloodType] || "-"}
+                    </td>
                     <td className="p-2">
                       {new Date(entry.donationDate).toLocaleDateString("vi-VN")}
                     </td>
                     <td className="p-2">{entry.volume} ml</td>
-                    <td className={`p-2 ${entry.status === 3 ? "text-green-600" : "text-yellow-600"}`}>
+                    <td
+                      className={`p-2 ${
+                        entry.status === 3
+                          ? "text-green-600"
+                          : "text-yellow-600"
+                      }`}
+                    >
                       {entry.status === 3 ? "Đã kiểm tra" : "Chưa kiểm tra"}
                     </td>
                     <td className="p-2">{entry.description || "-"}</td>
@@ -114,7 +123,13 @@ export default function BloodRawTable() {
                           Điền form
                         </button>
                       )}
-                      <button onClick={() => setExpandedRowId(expandedRowId === entry.id ? null : entry.id)}>
+                      <button
+                        onClick={() =>
+                          setExpandedRowId(
+                            expandedRowId === entry.id ? null : entry.id
+                          )
+                        }
+                      >
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
                     </td>
@@ -126,31 +141,56 @@ export default function BloodRawTable() {
                       <td colSpan={7} className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p><strong>Họ tên:</strong> {entry.bloodDonationRequest?.fullName}</p>
-                            <p><strong>Giới tính:</strong> {entry.bloodDonationRequest?.gender ? "Nam" : "Nữ"}</p>
-                            <p><strong>Tuổi:</strong> {entry.bloodDonationRequest?.healthCheckForm?.age || "-"}</p>
-                            <p><strong>Email:</strong> {entry.bloodDonationRequest?.email}</p>
-                            <p><strong>Địa chỉ:</strong> {entry.bloodDonationRequest?.addresss}</p>
+                            <p>
+                              <strong>Họ tên:</strong>{" "}
+                              {entry.bloodDonationRequest?.fullName}
+                            </p>
+                            <p>
+                              <strong>Giới tính:</strong>{" "}
+                              {entry.bloodDonationRequest?.gender
+                                ? "Nam"
+                                : "Nữ"}
+                            </p>
+                            <p>
+                              <strong>Tuổi:</strong>{" "}
+                              {entry.bloodDonationRequest?.healthCheckForm
+                                ?.age || "-"}
+                            </p>
+                            <p>
+                              <strong>Email:</strong>{" "}
+                              {entry.bloodDonationRequest?.email}
+                            </p>
+                            <p>
+                              <strong>Địa chỉ:</strong>{" "}
+                              {entry.bloodDonationRequest?.addresss}
+                            </p>
                           </div>
                           <div className="flex gap-4">
                             <div className="flex-1">
                               <img
-                                src={entry.bloodDonationRequest?.frontUrlIdentity}
+                                src={
+                                  entry.bloodDonationRequest?.frontUrlIdentity
+                                }
                                 alt="CCCD mặt trước"
                                 className="w-full max-h-[250px] object-contain border rounded"
                               />
-                              <p className="mt-1 text-sm text-center">CCCD mặt trước</p>
+                              <p className="mt-1 text-sm text-center">
+                                CCCD mặt trước
+                              </p>
                             </div>
                             <div className="flex-1">
                               <img
-                                src={entry.bloodDonationRequest?.backUrlIdentity}
+                                src={
+                                  entry.bloodDonationRequest?.backUrlIdentity
+                                }
                                 alt="CCCD mặt sau"
                                 className="w-full max-h-[250px] object-contain border rounded"
                               />
-                              <p className="mt-1 text-sm text-center">CCCD mặt sau</p>
+                              <p className="mt-1 text-sm text-center">
+                                CCCD mặt sau
+                              </p>
                             </div>
                           </div>
-
                         </div>
                       </td>
                     </tr>
@@ -169,7 +209,8 @@ export default function BloodRawTable() {
               Trước
             </button>
             <span>
-              Trang {pageIndex + 1} / {Math.ceil(filteredData.length / pageSize) || 1}
+              Trang {pageIndex + 1} /{" "}
+              {Math.ceil(filteredData.length / pageSize) || 1}
             </span>
             <button
               disabled={(pageIndex + 1) * pageSize >= filteredData.length}
