@@ -15,6 +15,9 @@ import SupervisorLayout from "@/layouts/SupervisorLayout";
 import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
 import BloodRawTable from "@/pages/bloodStorage/BloodDonationHistory";
 import BloodComponentsTable from "@/pages/bloodStorage/BloodSotage";
+import BloodHistoryTable from "@/pages/bloodStorage/BloodHistoryTable";
+import BloodRequestTable from "@/pages/bloodStorage/BloodRequestTable";
+
 
 
 import BloodDonationScheduleTable from "@/pages/nurse/BloodDonationTable";
@@ -99,6 +102,8 @@ export const router = createBrowserRouter([
       { path: "supervisor-dashboard", element: <SupervisorDashboard /> },
       { path: "blood-donation-history", element: <BloodRawTable /> },
       { path: "blood-sotage", element: <BloodComponentsTable /> },
+      { path: "history", element: <BloodHistoryTable /> },
+      { path: "blood-requests", element: <BloodRequestTable /> },
  
     ],
   },

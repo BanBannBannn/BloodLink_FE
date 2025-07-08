@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import apiClient from "@/api/apiClient";
 
 export interface BloodDonationRequest {
+  createdDate: any;
   medicalDeclarationForm(medicalDeclarationForm: any): void;
   id: string;
   code: string;

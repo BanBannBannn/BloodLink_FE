@@ -24,6 +24,7 @@ import {
 import { bloodTypes } from "@/constants/constants";
 import BloodStatisticsDashboard from "./blood-statistics-dashboard";
 import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
+import { isToday } from "date-fns";
 
 export default function BloodDonationRequestsTable() {
   const { data, loading, error, refresh } = useBloodDonationRequests();
@@ -37,6 +38,8 @@ export default function BloodDonationRequestsTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [medicalDeclaration, setMedicalDeclaration] = useState<any | null>(null);
+  const [dateFilter, setDateFilter] = useState("all");
+
 
 
   const [pageIndex, setPageIndex] = useState(0);
@@ -51,6 +54,16 @@ export default function BloodDonationRequestsTable() {
 
     setProcessingId(id);
     setAlertMessage(null);
+
+    const isToday = (dateString: string) => {
+      const date = new Date(dateString);
+      const today = new Date();
+      return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+      );
+    };
 
     try {
       await apiClient.put(
@@ -81,13 +94,26 @@ export default function BloodDonationRequestsTable() {
   };
 
   const filteredData = data.filter((item) => {
-    const matchStatus =
-      statusFilter === "all" || `${item.status}` === statusFilter;
-    const matchSearch = item.fullName
-      ?.toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchStatus && matchSearch;
+    const matchStatus = statusFilter === "all" || `${item.status}` === statusFilter;
+    const matchSearch = item.fullName?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const donatedDate = new Date(item.donatedDateRequest);
+    const today = new Date();
+    const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    let matchDate = true;
+    if (dateFilter === "today") {
+      matchDate = donatedDate.toDateString() === today.toDateString();
+    } else if (dateFilter === "thisWeek") {
+      matchDate = donatedDate >= startOfWeek && donatedDate <= today;
+    } else if (dateFilter === "thisMonth") {
+      matchDate = donatedDate >= startOfMonth && donatedDate <= today;
+    }
+
+    return matchStatus && matchSearch && matchDate;
   });
+
 
   const paginatedData = filteredData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
 
@@ -117,8 +143,9 @@ export default function BloodDonationRequestsTable() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4">
+            {/* Ô tìm kiếm */}
+            <div className="relative flex-1 min-w-[240px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 placeholder="Tìm kiếm theo tên người hiến..."
@@ -130,13 +157,15 @@ export default function BloodDonationRequestsTable() {
                 className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            <div className="relative">
+
+            {/* Filter theo trạng thái */}
+            <div className="relative min-w-[200px]">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Select value={statusFilter} onValueChange={(v) => {
                 setStatusFilter(v);
                 setPageIndex(0);
               }}>
-                <SelectTrigger className="w-48 pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                <SelectTrigger className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                   <SelectValue placeholder="Lọc theo trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
@@ -146,6 +175,25 @@ export default function BloodDonationRequestsTable() {
                   <SelectItem value="2">Từ chối</SelectItem>
                   <SelectItem value="3">Đã hủy</SelectItem>
                   <SelectItem value="4">Hoàn thành</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filter theo ngày hiến */}
+            <div className="relative min-w-[200px]">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Select value={dateFilter} onValueChange={(v) => {
+                setDateFilter(v);
+                setPageIndex(0);
+              }}>
+                <SelectTrigger className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectValue placeholder="Lọc theo ngày hiến máu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="today">Hôm nay</SelectItem>
+                  <SelectItem value="thisWeek">Tuần này</SelectItem>
+                  <SelectItem value="thisMonth">Tháng này</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -212,16 +260,13 @@ export default function BloodDonationRequestsTable() {
 
                     <td className="text-center px-4 py-4">
                       <div className="flex justify-center items-center gap-2">
-                        {item.status === 0 && (
-                          <>
-                            {/* Hành động */}
-                            <button
-                              onClick={() => setViewHealthForm(item)}
-                              className="px-3 py-1 border border-blue-500 text-blue-600 rounded hover:bg-blue-50 text-xs font-medium"
-                            >
-                              Điền form
-                            </button>
-                          </>
+                        {item.status === 0 && isToday(item.createdDate) && (
+                          <button
+                            onClick={() => setViewHealthForm(item)}
+                            className="px-3 py-1 border border-blue-500 text-blue-600 rounded hover:bg-blue-50 text-xs font-medium"
+                          >
+                            Điền form
+                          </button>
                         )}
                         <button
                           onClick={() =>
@@ -310,11 +355,12 @@ export default function BloodDonationRequestsTable() {
         {/* Modals */}
         {selectedRequest && showHealthForm && (
           <HealthCheckFormModal
-            request={selectedRequest}
-            onClose={() => {
-              setShowHealthForm(false);
-              setSelectedRequest(null);
-              window.location.reload();
+            request={viewHealthForm}
+            onClose={(shouldRefresh) => {
+              setViewHealthForm(null);
+              if (shouldRefresh) {
+                refresh(); 
+              }
             }}
           />
         )}
