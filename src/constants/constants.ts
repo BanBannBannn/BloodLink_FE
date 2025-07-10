@@ -18,5 +18,6 @@ export const BloodStorageStatus =
   ["Chưa kiểm tra",
     "An toàn ",
     "Hết hạn",
+    "",
     "Không đạt yêu cầu",
   ];

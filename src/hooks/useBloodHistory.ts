@@ -8,10 +8,13 @@ export interface BloodHistoryEntry {
     fullName: string;
     gender: boolean;
     email?: string;
+    phoneNo?: string;
+    age?: number;
     addresss?: string;
     frontUrlIdentity?: string;
     backUrlIdentity?: string;
     description?: string;
+    identityId?: string;
     healthCheckForm?: {
       age?: number;
     };
