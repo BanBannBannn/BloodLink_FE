@@ -42,6 +42,7 @@ export default function BloodCheckFormModal({ donation, onClose }: { donation: a
 
             alert("Gửi phiếu kiểm tra thành công!");
             onClose();
+            window.location.reload();
         } catch (err: any) {
             setError(err.response?.data?.title || "Gửi thất bại!");
         }
@@ -70,8 +71,8 @@ export default function BloodCheckFormModal({ donation, onClose }: { donation: a
                     </div>
 
                     {[
-                        "wbc", "rbc", "hgb", "hct", "mcv",
-                        "mch", "mchc", "plt", "mpv",
+                        "wbc (4-10)", "rbc (4.2-6.1)", "hgb (12.5-17.5)", "hct (36-52)", "mcv (80-100)",
+                        "mch (27-33)", "mchc (32-36)", "plt (150-450)", "mpv (7.5-11.5)",
                     ].map((key) => (
                         <div key={key}>
                             <label className="block capitalize mb-1">{key}</label>
