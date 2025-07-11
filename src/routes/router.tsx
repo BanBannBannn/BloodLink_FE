@@ -18,6 +18,8 @@ import BloodComponentsTable from "@/pages/bloodStorage/BloodSotage";
 import BloodHistoryTable from "@/pages/bloodStorage/BloodHistoryTable";
 import BloodRequestTable from "@/pages/bloodStorage/BloodRequestTable";
 
+
+
 import BloodDonationScheduleTable from "@/pages/nurse/BloodDonationTable";
 import BloodDonationRequestsTable from "@/pages/nurse/BloodDonationRequestsTable";
 import NurseDashboard from "@/pages/nurse/Dashboard";
@@ -103,6 +105,7 @@ export const router = createBrowserRouter([
       { path: "blood-sotage", element: <BloodComponentsTable /> },
       { path: "history", element: <BloodHistoryTable /> },
       { path: "blood-requests", element: <BloodRequestTable /> },
+ 
     ],
   },
 
