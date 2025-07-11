@@ -29,6 +29,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
 import Unauthorized from "@/pages/public/Unauthorized";
 import SupervisorManagement from "@/pages/admin/SupervisorManagement";
+import DonorManagementPage from "@/pages/nurse/DonatorManagement";
 
 export const router = createBrowserRouter([
   {
@@ -116,6 +117,7 @@ export const router = createBrowserRouter([
       { path: "nurse-dashboard", element: <NurseDashboard /> },
       { path: "blood-donation-table", element: <BloodDonationScheduleTable /> },
       { path: "blood-requests-table", element: <BloodDonationRequestsTable /> },
+      { path: "donor-management", element: <DonorManagementPage /> },
     ],
   },
 
