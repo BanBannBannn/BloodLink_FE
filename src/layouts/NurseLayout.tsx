@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   ArrowsUpDownIcon,
   ChartPieIcon,
-  ClipboardDocumentListIcon
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
@@ -66,6 +66,17 @@ export default function NurseLayout() {
             >
               <ClipboardDocumentListIcon className="w-5 h-5" />
               Danh sách hiến máu
+            </Link>
+            <Link
+              to="/nurse/donor-management"
+              className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-150 hover:bg-gray-100 ${
+                location.pathname === "nurse/donor-management"
+                  ? "bg-blue-100 text-blue-700 font-semibold"
+                  : "text-gray-700"
+              }`}
+            >
+              <ClipboardDocumentListIcon className="w-5 h-5" />
+              Thông tin người hiến
             </Link>
           </nav>
         </div>

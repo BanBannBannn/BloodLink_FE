@@ -35,7 +35,7 @@ export default function SupervisorLayout() {
         <div className="flex-1">
           <nav className="space-y-3 flex-1 flex flex-col">
             <Link
-              to="/supervisor"
+              to="/supervisor/supervisor-dashboard"
               className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-150 hover:bg-gray-100 ${
                 location.pathname === "/supervisor"
                   ? "bg-blue-100 text-blue-700 font-semibold"
