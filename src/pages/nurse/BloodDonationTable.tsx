@@ -15,6 +15,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Input } from "@/components/ui/input";
 import { MoreHorizontal } from "lucide-react";
 import { bloodTypes } from "@/constants/constants";
+import BloodDonationHistoryDashboard from "./blood-donation-history-dashboard";
 
 export default function BloodDonationTable() {
   const [searchQuery, setSearchQuery] = useState("");

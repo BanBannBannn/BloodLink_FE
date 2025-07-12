@@ -68,26 +68,26 @@ export default function SupervisorLayout() {
               Kho máu
             </Link>
             <Link
-              to="/supervisor/history"
+              to="/supervisor/emergency-blood-requests"
               className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-150 hover:bg-gray-100 ${
-                location.pathname === "/supervisor/history"
+                location.pathname === "/supervisor/emergency-blood-requests"
                   ? "bg-blue-100 text-blue-700 font-semibold"
                   : "text-gray-700"
               }`}
             >
               <ClipboardDocumentListIcon className="w-5 h-5" />
-              Lịch sử xuất nhập
+              Máu khẩn cấp
             </Link>
             <Link
-              to="/supervisor/blood-requests"
+              to="/supervisor/export-blood-requests"
               className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-150 hover:bg-gray-100 ${
-                location.pathname === "/supervisor/blood-requests"
+                location.pathname === "/supervisor/export-blood-requests"
                   ? "bg-blue-100 text-blue-700 font-semibold"
                   : "text-gray-700"
               }`}
             >
               <ClipboardDocumentListIcon className="w-5 h-5" />
-              Yêu cầu xuất kho
+              Yêu cầu xuất máu
             </Link>
           </nav>
         </div>
