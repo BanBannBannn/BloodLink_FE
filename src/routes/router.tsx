@@ -6,6 +6,9 @@ import BloodDonation from "@/pages/user/BloodDonation";
 import ProfilePage from "@/pages/user/Profile";
 import BloodDonationHistory from "@/pages/user/BloodDonationHistory";
 import FAQ from "@/pages/public/FAQ";
+import Blog from "@/pages/user/Blog";
+import PublicBlog from "@/pages/public/Blog";
+import BlogManagement from "@/pages/admin/BlogManagement";
 
 import AdminLayout from "@/layouts/AdminLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -31,6 +34,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
 import Unauthorized from "@/pages/public/Unauthorized";
 import SupervisorManagement from "@/pages/admin/SupervisorManagement";
+import EmergencyRequest from "@/pages/nurse/EmergencyRequest";
 import DonorManagementPage from "@/pages/nurse/DonatorManagement";
 
 export const router = createBrowserRouter([
@@ -74,6 +78,18 @@ export const router = createBrowserRouter([
         path: "/blood-donation-history",
         element: <BloodDonationHistory />,
       },
+      {
+        path: "/blogs",
+        element: <PublicBlog />,
+      },
+      {
+        path: "/user/blog",
+        element: (
+          <ProtectedRoute allowedRoles={["MEMBER"]}>
+            <Blog />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 
@@ -89,6 +105,7 @@ export const router = createBrowserRouter([
       { path: "member-management", element: <AccountManagement /> },
       { path: "nurse-management", element: <NurseManagement /> },
       { path: "supervisor-management", element: <SupervisorManagement /> },
+      { path: "blog-management", element: <BlogManagement /> },
     ],
   },
 
@@ -120,6 +137,7 @@ export const router = createBrowserRouter([
       { path: "nurse-dashboard", element: <NurseDashboard /> },
       { path: "blood-donation-table", element: <BloodDonationScheduleTable /> },
       { path: "blood-requests-table", element: <BloodDonationRequestsTable /> },
+      { path: "blood-emergency-requests", element: <EmergencyRequest /> },
       { path: "donor-management", element: <DonorManagementPage /> },
     ],
   },

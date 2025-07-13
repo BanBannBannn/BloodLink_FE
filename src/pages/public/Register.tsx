@@ -1,6 +1,13 @@
 import { registerApi } from "@/api/authApi";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Form,
   FormControl,
@@ -10,10 +17,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/toast";
+import { hcmDistricts } from "@/constants/constants";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -26,7 +42,10 @@ const registerSchema = z
     Password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
     confirmPassword: z.string(),
     Addresss: z.string().nonempty("Không được để trống"),
-    PhoneNo: z.string().nonempty("Không được để trống"),
+    PhoneNo: z
+      .string()
+      .nonempty("Không được để trống")
+      .length(10, "Số điện thoại gồm 10 chữ số"),
     RoleId: z.string(),
     DateOfBirth: z.string().nonempty("Không được để trống"),
     Gender: z.boolean({ required_error: "Vui lòng chọn giới tính" }),
@@ -50,7 +69,8 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 function RegisterPage() {
   const navigate = useNavigate();
-  const toast = useToast()
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const form = useForm<RegisterFormData>({
@@ -90,7 +110,7 @@ function RegisterPage() {
     const result = await registerApi(formData);
 
     if (result.success) {
-      toast.success("Đăng kí thành công")
+      toast.success("Đăng kí thành công");
       form.reset();
       setIsLoading((prev) => !prev);
       navigate("/login");
@@ -189,14 +209,30 @@ function RegisterPage() {
                     <FormItem>
                       <FormLabel>Địa chỉ</FormLabel>
                       <FormControl>
-                        <Input
-                          id="address"
-                          type="text"
-                          placeholder="Địa chỉ"
-                          onChange={field.onChange}
-                          value={field.value}
-                          className="mt-1 h-11 rounded-lg border-gray-200 focus:border-red-500 focus:ring-red-500"
-                        />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full mt-1 h-11 rounded-lg border-gray-200 justify-between text-left font-normal",
+                                form.formState.errors.DateOfBirth &&
+                                  "border-red-500 ring-red-500"
+                              )}
+                            >
+                              {field.value || "Chọn quận/huyện"}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-full max-h-60 overflow-y-auto">
+                            {hcmDistricts.map((district) => (
+                              <DropdownMenuItem
+                                key={district}
+                                onSelect={() => field.onChange(district)}
+                              >
+                                {district}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -273,14 +309,40 @@ function RegisterPage() {
                     <FormItem>
                       <FormLabel>Ngày sinh</FormLabel>
                       <FormControl>
-                        <Input
-                          id="dateOfBirth"
-                          type="date"
-                          onChange={field.onChange}
-                          value={field.value}
-                          className="mt-1 h-11 rounded-lg border-gray-200 focus:border-red-500 focus:ring-red-500"
-                        />
+                        <Popover open={open} onOpenChange={setOpen}>
+                          <PopoverTrigger>
+                            <Button
+                              variant="outline"
+                              id="date"
+                              className="w-full justify-between font-normal"
+                            >
+                              {field.value
+                                ? format(new Date(field.value), "dd-MM-yyyy")
+                                : "Chọn ngày sinh"}
+                              <ChevronDownIcon />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-auto overflow-hidden p-0"
+                            align="start"
+                          >
+                            <Calendar
+                              mode="single"
+                              selected={
+                                field.value ? new Date(field.value) : undefined
+                              }
+                              captionLayout="dropdown"
+                              onSelect={(date) => {
+                                field.onChange(
+                                  date ? format(date, "yyyy-MM-dd") : ""
+                                );
+                                setOpen(false);
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -386,7 +448,7 @@ function RegisterPage() {
 
                 {errorMessage && <p className="text-red-500">{errorMessage}</p>}
 
-                <div className="col-span-2">
+                <div className="col-span-2 space-y-4">
                   <Button
                     disabled={isLoading}
                     type="submit"
