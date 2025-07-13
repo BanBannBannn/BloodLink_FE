@@ -14,12 +14,12 @@ export const timeSlots = [
   "15:30 - 16:00",
 ];
 
-export const BloodStorageStatus =
-  ["Chưa kiểm tra",
-    "An toàn ",
-    "Hết hạn",
-    "Không đạt yêu cầu",
-  ];
+export const BloodStorageStatus = [
+  "Chưa kiểm tra",
+  "An toàn ",
+  "Hết hạn",
+  "Không đạt yêu cầu",
+];
 
 export const hcmDistricts = [
   "Quận 1, Thành phố Hồ Chí Minh",
@@ -43,5 +43,13 @@ export const hcmDistricts = [
   "Huyện Củ Chi, Thành phố Hồ Chí Minh",
   "Huyện Hóc Môn, Thành phố Hồ Chí Minh",
   "Huyện Nhà Bè, Thành phố Hồ Chí Minh",
-  "Thành phố Thủ Đức, Thành phố Hồ Chí Minh"
+  "Thành phố Thủ Đức, Thành phố Hồ Chí Minh",
 ];
+
+export const statusMapEmergencyRequest: Record<number, string> = {
+  0: "Chờ xác nhận",
+  1: "Từ chối",
+  2: "Đang xử lí",
+  3: "Hoàn tất",
+  4: "Hủy",
+};

@@ -32,6 +32,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
 import Unauthorized from "@/pages/public/Unauthorized";
 import SupervisorManagement from "@/pages/admin/SupervisorManagement";
+import EmergencyRequest from "@/pages/nurse/EmergencyRequest";
 
 export const router = createBrowserRouter([
   {
@@ -132,6 +133,7 @@ export const router = createBrowserRouter([
       { path: "nurse-dashboard", element: <NurseDashboard /> },
       { path: "blood-donation-table", element: <BloodDonationScheduleTable /> },
       { path: "blood-requests-table", element: <BloodDonationRequestsTable /> },
+      { path: "blood-emergency-requests", element: <EmergencyRequest /> },
     ],
   },
 
