@@ -180,10 +180,7 @@ function BloodDonation() {
                             Ngày hiến máu
                           </FormLabel>
                           <FormControl>
-                            <Popover
-                              open={calendarOpen}
-                              onOpenChange={setCalendarOpen}
-                            >
+                            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                               <PopoverTrigger className="!flex justify-start">
                                 <Button
                                   type="button"
@@ -201,7 +198,7 @@ function BloodDonation() {
                                 >
                                   {field.value ? (
                                     format(
-                                      new Date(field.value + "T00:00:00"),
+                                      new Date(field.value),
                                       "dd-MM-yyyy"
                                     )
                                   ) : (
@@ -218,12 +215,12 @@ function BloodDonation() {
                                   mode="single"
                                   selected={
                                     field.value
-                                      ? new Date(field.value + "T00:00:00")
+                                      ? new Date(field.value)
                                       : undefined
                                   }
                                   onSelect={(date) => {
                                     field.onChange(
-                                      date ? format(date, "yyyy-MM-dd") : ""
+                                      date ? date.toISOString() : ""
                                     );
                                     setCalendarOpen(false);
                                   }}

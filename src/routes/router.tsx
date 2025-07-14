@@ -33,6 +33,7 @@ import SupervisorManagement from "@/pages/admin/SupervisorManagement";
 import EmergencyRequest from "@/pages/nurse/EmergencyRequest";
 import Unauthorized from "@/pages/public/Unauthorized";
 import { createBrowserRouter } from "react-router-dom";
+import DonorManagementPage from "@/pages/nurse/DonatorManagement";
 
 export const router = createBrowserRouter([
   {
@@ -115,6 +116,7 @@ export const router = createBrowserRouter([
       { path: "blood-sotage", element: <BloodComponentsTable /> },
       { path: "history", element: <BloodHistoryTable /> },
       { path: "blood-requests", element: <BloodRequestTable /> },
+ 
     ],
   },
 
@@ -130,6 +132,7 @@ export const router = createBrowserRouter([
       { path: "blood-donation-table", element: <BloodDonationScheduleTable /> },
       { path: "blood-requests-table", element: <BloodDonationRequestsTable /> },
       { path: "blood-emergency-requests", element: <EmergencyRequest /> },
+      { path: "donor-management", element: <DonorManagementPage /> },
     ],
   },
 
