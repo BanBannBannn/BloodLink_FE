@@ -72,6 +72,7 @@ export interface EmergencyBloodRequest {
   bloodComponent: { id: string; name: string };
   bloodGroup: { id: string; displayName: string };
   status: number;
+  code: string;
 }
 
 function EmergencyRequest() {
@@ -192,6 +193,7 @@ function EmergencyRequest() {
     }
   }, [open, selectedRequest, form]);
 
+  console.log(requests);
   return (
     <div className="p-6 h-full flex-1 flex flex-col space-y-6 bg-gradient-to-br from-blue-50 to-white min-h-screen">
       <BloodStorageDashboard />
@@ -366,13 +368,13 @@ function EmergencyRequest() {
                 </TableRow>
               ) : (
                 requests.length > 0 &&
-                requests.map((req, idx) => (
+                requests.map((req) => (
                   <TableRow
                     key={req.id}
                     className="hover:bg-blue-50/60 transition-colors rounded-lg"
                   >
                     <TableCell className="text-center font-semibold text-blue-600">
-                      {(pageIndex - 1) * pageSize + idx + 1}
+                      {req.code}
                     </TableCell>
                     <TableCell
                       className="max-w-[220px] truncate"

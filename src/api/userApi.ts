@@ -38,3 +38,11 @@ export const cancelBloodRequest = async (id: string) => {
   );
   return response;
 };
+
+export const getBlogs = async () => {
+  return await apiClient.get("/blogs");
+};
+
+export const getBlogById = async (id: string) => {
+  return await apiClient.get(`/blogs/${id}`);
+};

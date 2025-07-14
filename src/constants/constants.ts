@@ -14,13 +14,6 @@ export const timeSlots = [
   "15:30 - 16:00",
 ];
 
-// export const BloodStorageStatus = [
-//   "Chưa kiểm tra",
-//   "An toàn ",
-//   "Hết hạn",
-//   "Không đạt yêu cầu",
-// ];
-
 export const hcmDistricts = [
   "Quận 1, Thành phố Hồ Chí Minh",
   "Quận 3, Thành phố Hồ Chí Minh",

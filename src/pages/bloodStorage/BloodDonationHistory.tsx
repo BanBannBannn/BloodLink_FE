@@ -153,41 +153,7 @@ export default function BloodRawTable() {
         <div>
           <h1 className="text-2xl font-bold mb-4">Lịch sử nhận máu</h1>
           <SupervisorDonationSummaryDashboard />
-          <div className="flex gap-4 mb-4">
-            <Input
-              placeholder="Tìm theo tên..."
-              value={searchQuery}
-              onChange={(e) => {
-                setPageIndex(0);
-                setSearchQuery(e.target.value);
-              }}
-              className="w-48"
-            />
-            <Select
-              value={statusFilter}
-              onValueChange={(val) => {
-                setStatusFilter(val as "all" | "1" | "3");
-                setPageIndex(0);
-              }}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Lọc theo trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="1">Chưa kiểm tra</SelectItem>
-                <SelectItem value="3">Đã kiểm tra</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertTitle>Có lỗi xảy ra</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
+          
           {alertMessage && (
             <Alert variant="destructive" className="mb-6">
               <AlertTitle>Lỗi</AlertTitle>
