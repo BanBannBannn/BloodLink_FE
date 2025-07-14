@@ -1,4 +1,3 @@
-// pages/bloodStorage/BloodExportPage.tsx
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 import {
@@ -23,44 +22,79 @@ export default function BloodExportPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const fetchRequests = async () => {
-    const res = await axiosInstance.get("/api/emergency-blood-requests");
-    setRequests(res.data.records.filter((r: any) => r.status === 2));
+    try {
+      const res = await axiosInstance.get("/emergency-blood-requests");
+      setRequests(res.data.records.filter((r: any) => r.status === 2));
+    } catch (err) {
+      console.error("Lỗi khi tải yêu cầu khẩn cấp:", err);
+    }
   };
 
-  const fetchAvailableBloods = async (requestId: string) => {
-    const res = await axiosInstance.get(`/api/blood-storage/available-bloods?emergencyBloodRequestId=${requestId}`);
-    setAvailableBloods(res.data);
+  const fetchAvailableBloods = async (id: string) => {
+    console.log("Request ID:", id);
+    try {
+      const res = await axiosInstance.get(
+        `/blood-storage/available-bloods?emergencyBloodRequestId=${id}`
+      );
+      const result = res.data;
+
+      console.log("Available bloods response:", result);
+      setAvailableBloods(Array.isArray(result.records) ? result.records : []);
+    } catch (err) {
+      console.error("Lỗi khi tải kho máu:", err);
+      setAvailableBloods([]);
+    }
   };
+
 
   useEffect(() => {
     fetchRequests();
   }, []);
 
   const handleCheckboxChange = (id: string) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
   };
 
   const handleConfirmExport = async () => {
+    if (!selectedRequest || selectedIds.length === 0) return;
+
+    const requestId = selectedRequest.id;
+
+    const payload = {
+      bloodStorageIds: selectedIds,
+    };
+
+    console.log("Gửi xuất máu:", {
+      requestId,
+      payload,
+    });
+
     try {
-      await axiosInstance.post(`/api/blood-storage/issue`, {
-        emergencyBloodRequestId: selectedRequest.id,
-        bloodUnitIds: selectedIds,
-      });
+      await axiosInstance.post(
+        `/blood-issues?EmergencyBloodRequestId=${requestId}`,
+        payload
+      );
+      alert("Xuất máu thành công!");
       setConfirmOpen(false);
+      setExpandedId(null);
       setSelectedRequest(null);
       setSelectedIds([]);
-      fetchRequests();
+      await fetchRequests();
     } catch (err: any) {
-      alert(err.response?.data?.title || "Lỗi khi xuất máu!");
+      console.error("Lỗi khi xuất máu:", err);
+      alert(
+        err.response?.data?.title ||
+        err.response?.data?.message ||
+         "Xuất máu thất bại!");
     }
   };
 
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Duyệt phiếu xuất máu</h1>
-
+      <h1 className="text-xl font-bold mb-4">Trang xuất máu</h1>
       <div className="bg-white border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-100 text-gray-700">
@@ -68,7 +102,7 @@ export default function BloodExportPage() {
               <th className="text-left px-6 py-3">Mã yêu cầu</th>
               <th className="text-center px-4 py-3">Nhóm máu</th>
               <th className="text-center px-4 py-3">Chế phẩm</th>
-              <th className="text-center px-4 py-3">Thể tích (ml)</th>
+              <th className="text-center px-4 py-3">Thể tích</th>
               <th className="text-center px-4 py-3">Địa chỉ</th>
               <th className="text-center px-4 py-3">Hành động</th>
             </tr>
@@ -77,20 +111,21 @@ export default function BloodExportPage() {
             {requests.map((r) => (
               <React.Fragment key={r.id}>
                 <tr className="border-t hover:bg-gray-50">
-                  <td className="px-6 py-4">{r.code}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">{r.code}</td>
                   <td className="text-center px-4 py-4">{r.bloodGroup?.displayName}</td>
                   <td className="text-center px-4 py-4">{r.bloodComponent?.name}</td>
-                  <td className="text-center px-4 py-4">{r.volume}</td>
+                  <td className="text-center px-4 py-4">{r.volume} ml</td>
                   <td className="text-center px-4 py-4">{r.address}</td>
                   <td className="text-center px-4 py-4">
                     <Button
                       variant="outline"
                       onClick={async () => {
-                        setExpandedId(expandedId === r.id ? null : r.id);
-                        if (expandedId !== r.id) {
+                        const toggling = expandedId === r.id ? null : r.id;
+                        setExpandedId(toggling);
+                        setSelectedRequest(toggling ? r : null);
+                        setSelectedIds([]);
+                        if (toggling) {
                           await fetchAvailableBloods(r.id);
-                          setSelectedRequest(r);
-                          setSelectedIds([]);
                         }
                       }}
                     >
@@ -105,18 +140,18 @@ export default function BloodExportPage() {
                       <h3 className="font-semibold mb-2">Chọn các túi máu để xuất</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {availableBloods.length === 0 ? (
-                          <p className="text-sm text-gray-600">Không tìm thấy túi máu phù hợp.</p>
+                          <p className="text-sm text-gray-600">Không có túi máu phù hợp.</p>
                         ) : (
                           availableBloods.map((b) => (
-                            <div key={b.id} className="border p-3 rounded flex items-center gap-3">
+                            <div key={b.id} className="border p-3 rounded flex items-start gap-3">
                               <Checkbox
                                 checked={selectedIds.includes(b.id)}
                                 onCheckedChange={() => handleCheckboxChange(b.id)}
                               />
                               <div>
                                 <p><strong>Mã:</strong> {b.code}</p>
-                                <p><strong>Nhóm:</strong> {b.bloodGroup?.displayName}</p>
-                                <p><strong>Loại:</strong> {b.bloodComponent?.name}</p>
+                                <p><strong>Nhóm:</strong> {typeof b.bloodGroup === "string" ? b.bloodGroup : b.bloodGroup?.displayName}</p>
+                                <p><strong>Loại:</strong> {typeof b.bloodComponent === "string" ? b.bloodComponent : b.bloodComponent?.name}</p>
                                 <p><strong>Thể tích:</strong> {b.volume} ml</p>
                               </div>
                             </div>
@@ -129,7 +164,7 @@ export default function BloodExportPage() {
                           <Button
                             disabled={selectedIds.length === 0}
                             onClick={() => setConfirmOpen(true)}
-                            className="bg-purple-600 text-white"
+                            className="bg-blue-600 text-white"
                           >
                             Xác nhận xuất {selectedIds.length} túi máu
                           </Button>
@@ -144,12 +179,15 @@ export default function BloodExportPage() {
         </table>
       </div>
 
-      {/* Popup xác nhận */}
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Bạn có chắc chắn muốn xuất máu?</AlertDialogTitle>
+            <AlertDialogTitle>Xác nhận xuất máu?</AlertDialogTitle>
           </AlertDialogHeader>
+          <p className="px-4 text-sm text-gray-700">
+            Bạn có chắc chắn muốn xuất {selectedIds.length} túi máu cho yêu cầu{" "}
+            <strong>{selectedRequest?.code}</strong>?
+          </p>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmExport}>
