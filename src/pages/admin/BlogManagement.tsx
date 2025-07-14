@@ -47,6 +47,8 @@ import {
   uploadImage,
   updateBlog,
 } from "@/api/adminApi";
+import { useToast } from "@/components/ui/toast";
+import { stripHtml } from "@/utils/validator";
 
 export interface BlogPost {
   id?: string;
@@ -74,56 +76,41 @@ type BlogFormData =
   | z.infer<typeof createBlogSchema>
   | z.infer<typeof editBlogSchema>;
 
-// Utility to strip HTML tags from a string
-function stripHtml(html: string): string {
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent || div.innerText || "";
-}
-
 const BlogManagement: React.FC = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [open, setOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [blogToDelete, setBlogToDelete] = useState<BlogPost | null>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
+  const [selectedBlog, setSelectedBlog] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const toast = useToast();
 
   const form = useForm<BlogFormData>({
-    resolver: zodResolver(editMode ? editBlogSchema : createBlogSchema),
+    resolver: zodResolver(selectedBlog ? editBlogSchema : createBlogSchema),
     defaultValues: { title: "", summary: "", content: "", image: undefined },
   });
 
-  const openEditDialog = (blog: BlogPost) => {
-    setEditMode(true);
-    setEditingBlog(blog);
-    setOpen(true);
-    form.reset({
-      title: blog.title,
-      summary: blog.summary,
-      content: blog.content,
-      image: undefined,
-    });
-  };
-
   const onSubmit = async (data: BlogFormData) => {
+    setLoading(true);
     try {
-      let uploadedImageUrl = editingBlog?.imageUrl || "";
+      let uploadedImageUrl = selectedBlog?.imageUrl || "";
       const updatePayload: Partial<BlogPost> = {
         title: data.title,
         summary: data.summary,
         content: data.content,
       };
-      if (editMode && editingBlog) {
+      if (selectedBlog) {
         if (data.image) {
           const responseUpLoadImage = await uploadImage(data.image);
           uploadedImageUrl = responseUpLoadImage.data.fileUrl as string;
           updatePayload.imageUrl = uploadedImageUrl;
         }
-        const response = await updateBlog(editingBlog.id!, updatePayload);
+        await updateBlog(selectedBlog.id!, updatePayload);
         setBlogs((prev) =>
-          prev.map((b) => (b.id === editingBlog.id ? response.data : b))
+          prev.map((b) =>
+            b.id === selectedBlog.id ? { ...selectedBlog, ...updatePayload } : b
+          )
         );
+        setSelectedBlog(null);
       } else {
         if (data.image) {
           const responseUpLoadImage = await uploadImage(data.image);
@@ -137,26 +124,31 @@ const BlogManagement: React.FC = () => {
         });
         const newBlog = response.data;
         setBlogs((prev) => [newBlog, ...prev]);
+        toast.success("Tạo bài viết thành công");
       }
+      setLoading(false);
       setOpen(false);
-      setEditMode(false);
-      setEditingBlog(null);
       form.reset();
     } catch (error) {
+      setLoading(false);
       console.log(error);
     }
   };
 
-  const handleDeleteBlog = async (blog: BlogPost) => {
+  const handleDeleteBlog = async () => {
+    setLoading(true);
     try {
-      if (!blogToDelete) {
+      if (!selectedBlog) {
         return;
       }
-      await deleteBlog(blog.id!);
-      setBlogs((prev) => prev.filter((b) => b.id !== blogToDelete.id));
+      await deleteBlog(selectedBlog.id!);
+      toast.success("Xóa bài viết thành công");
+      setBlogs((prev) => prev.filter((b) => b.id !== selectedBlog.id));
       setDeleteDialogOpen(false);
-      setBlogToDelete(null);
+      setSelectedBlog(null);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.log(error);
     }
   };
@@ -164,15 +156,33 @@ const BlogManagement: React.FC = () => {
   useEffect(() => {
     const getListBlog = async () => {
       try {
+        setLoading(true);
         const response = await getAllBlogs();
         console.log(response.data.records);
         setBlogs(response.data.records);
+        setLoading(false);
       } catch (error) {
+        setLoading(false);
         console.log(error);
       }
     };
     getListBlog();
   }, []);
+
+  useEffect(() => {
+    if (open) {
+      if (selectedBlog) {
+        form.reset({
+          title: selectedBlog.title,
+          summary: selectedBlog.summary,
+          content: selectedBlog.content,
+          image: undefined,
+        });
+      } else {
+        form.reset({ title: "", summary: "", content: "", image: undefined });
+      }
+    }
+  }, [open, selectedBlog, form]);
 
   return (
     <div className="p-6 h-full flex-1 flex flex-col space-y-6">
@@ -180,22 +190,11 @@ const BlogManagement: React.FC = () => {
         <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
           Quản lí bài viết
         </h1>
-        <Dialog
-          open={open}
-          onOpenChange={(v) => {
-            setOpen(v);
-            if (!v) {
-              setEditMode(false);
-              setEditingBlog(null);
-              form.reset();
-            }
-          }}
-        >
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button
               onClick={() => {
-                setEditMode(false);
-                setEditingBlog(null);
+                setSelectedBlog(null);
                 form.reset();
               }}
             >
@@ -206,10 +205,10 @@ const BlogManagement: React.FC = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editMode ? "Chỉnh sửa bài viết" : "Thêm bài viết mới"}
+                {selectedBlog ? "Chỉnh sửa bài viết" : "Thêm bài viết mới"}
               </DialogTitle>
               <DialogDescription>
-                {editMode
+                {selectedBlog
                   ? "Chỉnh sửa thông tin bài viết bên dưới."
                   : "Điền thông tin bài viết bên dưới."}
               </DialogDescription>
@@ -284,10 +283,27 @@ const BlogManagement: React.FC = () => {
                   )}
                 />
                 <DialogFooter className="mt-15 flex">
-                  <Button type="button" onClick={() => setOpen(false)}>
+                  <Button
+                    className="cursor-pointer"
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    disabled={loading}
+                  >
                     Hủy
                   </Button>
-                  <Button type="submit">Lưu</Button>
+                  <Button
+                    className="cursor-pointer"
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading
+                      ? selectedBlog
+                        ? "Đang cập nhật"
+                        : "Đang tạo bài viết"
+                      : selectedBlog
+                      ? "Cập nhật bài viết"
+                      : "Tạo vài viết"}
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -363,7 +379,10 @@ const BlogManagement: React.FC = () => {
                         <DropdownMenuContent>
                           <DropdownMenuItem
                             className="flex items-center gap-2"
-                            onClick={() => openEditDialog(blog)}
+                            onClick={() => {
+                              setSelectedBlog(blog);
+                              setOpen(true);
+                            }}
                           >
                             <span>Chỉnh sửa</span>
                             <DropdownMenuShortcut>
@@ -374,7 +393,7 @@ const BlogManagement: React.FC = () => {
                             variant="destructive"
                             className="flex items-center gap-2"
                             onClick={() => {
-                              setBlogToDelete(blog);
+                              setSelectedBlog(blog);
                               setDeleteDialogOpen(true);
                             }}
                           >
@@ -404,21 +423,20 @@ const BlogManagement: React.FC = () => {
           </DialogHeader>
           <DialogFooter>
             <Button
-              variant="secondary"
+              variant="ghost"
               onClick={() => {
-                form.reset();
+                setSelectedBlog(null);
                 setDeleteDialogOpen(false);
               }}
+              className="cursor-pointer"
             >
               Hủy
             </Button>
             <Button
               variant="destructive"
-              onClick={async () => {
-                if (blogToDelete) {
-                  await handleDeleteBlog(blogToDelete);
-                }
-              }}
+              className="cursor-pointer"
+              onClick={handleDeleteBlog}
+              disabled={loading}
             >
               Xác nhận
             </Button>
