@@ -2,7 +2,7 @@ import { getUserInfo } from "@/api/userApi";
 import { createContext, useContext, useEffect, useState } from "react";
 import { getToken, removeToken, setToken } from "../api/apiClient";
 
-type User = {
+export type User = {
   id: string;
   fullName: string;
   email: string;
@@ -13,6 +13,8 @@ type User = {
   phoneNo: string;
   status: string;
   roleName: string;
+  dateOfBirth: string;
+  gender: boolean;
 };
 
 type AuthContextType = {
@@ -45,7 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const token = getToken();
         const userId = localStorage.getItem("userId");
-        
+
         if (!token || !userId) {
           setLoading(false);
           return;

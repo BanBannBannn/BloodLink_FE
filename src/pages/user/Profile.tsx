@@ -19,14 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import type { LucideIcon } from "lucide-react";
-import {
-  Calendar,
-  Edit,
-  Mail,
-  MapPin,
-  Phone,
-  User
-} from "lucide-react";
+import { Calendar, Edit, Mail, MapPin, Phone, User } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -38,6 +31,10 @@ const profileSchema = z.object({
   address: z.string().min(5, "Địa chỉ phải có ít nhất 5 ký tự"),
   dateOfBirth: z.string(),
   bloodType: z.string(),
+  gender: z.string(),
+  identityId: z.string().min(9, "CMND/CCCD phải có ít nhất 9 ký tự"),
+  backUrlIdentity: z.string(),
+  frontUrlIdentity: z.string(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -53,7 +50,11 @@ function ProfilePage() {
       email: user?.email,
       phone: user?.phoneNo,
       address: user?.addresss,
-      dateOfBirth: "2000-01-01",
+      dateOfBirth: user?.dateOfBirth,
+      gender: user?.gender !== undefined ? String(user?.gender) : "",
+      identityId: user?.identityId,
+      backUrlIdentity: user?.backUrlIdentity,
+      frontUrlIdentity: user?.frontUrlIdentity,
     },
   });
 
@@ -86,7 +87,17 @@ function ProfilePage() {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...field} className="mt-1" />
+                  {name === "gender" ? (
+                    <select {...field} className="mt-1 w-full border rounded px-2 py-2">
+                      <option value="">Chọn giới tính</option>
+                      <option value="true">Nam</option>
+                      <option value="false">Nữ</option>
+                    </select>
+                  ) : name === "identityId" ? (
+                    <Input {...field} className="mt-1" />
+                  ) : (
+                    <Input {...field} className="mt-1" />
+                  )}
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -162,12 +173,36 @@ function ProfilePage() {
                   label="Ngày sinh"
                   value={format(
                     new Date(form.getValues("dateOfBirth")),
-                    "dd MMMM, yyyy",
+                    "dd/MM/yyyy",
                     {
                       locale: vi,
                     }
                   )}
                   name="dateOfBirth"
+                />
+                <InfoRow
+                  icon={User}
+                  label="Giới tính"
+                  value={form.getValues("gender") === "true" ? "Nam" : form.getValues("gender") === "false" ? "Nữ" : ""}
+                  name="gender"
+                />
+                <InfoRow
+                  icon={User}
+                  label="CMND/CCCD"
+                  value={form.getValues("identityId")}
+                  name="identityId"
+                />
+                <InfoRow
+                  icon={User}
+                  label="Ảnh mặt trước giấy tờ"
+                  value={form.getValues("frontUrlIdentity")}
+                  name="frontUrlIdentity"
+                />
+                <InfoRow
+                  icon={User}
+                  label="Ảnh mặt sau giấy tờ"
+                  value={form.getValues("backUrlIdentity")}
+                  name="backUrlIdentity"
                 />
 
                 {isEditing && (

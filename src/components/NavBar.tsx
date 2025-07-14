@@ -9,11 +9,14 @@ import { Button } from "./ui/button";
 import { History, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { useToast } from "@/components/ui/toast";
+import { validateUserInfor } from "@/utils/validator";
 
 function NavBar() {
   const [open, setOpen] = useState<boolean>(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleLogout = () => {
     logout();
@@ -41,10 +44,35 @@ function NavBar() {
             { name: "Trang chủ", link: "/" },
             { name: "Hiến máu", link: "/blood-donation" },
             { name: "Câu hỏi thường gặp", link: "/faq" },
+            { name: "Blog", link: "/blogs" },
             { name: "Đăng nhập", link: "/login" },
           ].map((item) => {
             if (item.name === "Đăng nhập" && user) {
               return null;
+            }
+            if (item.name === "Hiến máu") {
+              return (
+                <button
+                  key={item.name}
+                  className="text-gray-600 hover:text-red-600 transition-colors bg-transparent border-none outline-none cursor-pointer"
+                  onClick={() => {
+                    if (!user) {
+                      navigate("/login");
+                      return;
+                    }
+                    if (!validateUserInfor(user)) {
+                      toast.error(
+                        "Vui lòng cập nhật đầy đủ thông tin cá nhân trước khi đăng ký hiến máu."
+                      );
+                      navigate("/profile");
+                      return;
+                    }
+                    navigate("/blood-donation");
+                  }}
+                >
+                  {item.name}
+                </button>
+              );
             }
             return (
               <Link

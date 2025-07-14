@@ -11,7 +11,13 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { MoreHorizontal } from "lucide-react";
 import { bloodTypes } from "@/constants/constants";
@@ -36,19 +42,27 @@ export default function BloodDonationTable() {
       window.location.reload();
     } catch (err: any) {
       const { message, detail } = err.response?.data || {};
-      setAlertMessage(`${message || "Có lỗi xảy ra"}${detail ? `: ${detail}` : ""}`);
+      setAlertMessage(
+        `${message || "Có lỗi xảy ra"}${detail ? `: ${detail}` : ""}`
+      );
     } finally {
       setProcessingId(null);
     }
   };
 
   const filteredData = data.filter((item) => {
-    const nameMatch = item.bloodDonationRequest?.fullName?.toLowerCase().includes(searchQuery.toLowerCase());
-    const statusMatch = statusFilter === "all" || item.status.toString() === statusFilter;
+    const nameMatch = item.bloodDonationRequest?.fullName
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const statusMatch =
+      statusFilter === "all" || item.status.toString() === statusFilter;
     return nameMatch && statusMatch;
   });
 
-  const paginatedData = filteredData.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
+  const paginatedData = filteredData.slice(
+    pageIndex * pageSize,
+    (pageIndex + 1) * pageSize
+  );
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -69,10 +83,13 @@ export default function BloodDonationTable() {
               />
             </div>
             <div className="relative">
-              <Select value={statusFilter} onValueChange={(v) => {
-                setStatusFilter(v);
-                setPageIndex(0);
-              }}>
+              <Select
+                value={statusFilter}
+                onValueChange={(v) => {
+                  setStatusFilter(v);
+                  setPageIndex(0);
+                }}
+              >
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="Lọc theo trạng thái" />
                 </SelectTrigger>
@@ -87,14 +104,19 @@ export default function BloodDonationTable() {
           </div>
         </div>
 
-        <AlertDialog open={!!alertMessage} onOpenChange={(open) => !open && setAlertMessage(null)}>
+        <AlertDialog
+          open={!!alertMessage}
+          onOpenChange={(open) => !open && setAlertMessage(null)}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Lỗi</AlertDialogTitle>
               <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogAction onClick={() => setAlertMessage(null)}>Đóng</AlertDialogAction>
+              <AlertDialogAction onClick={() => setAlertMessage(null)}>
+                Đóng
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -119,13 +141,30 @@ export default function BloodDonationTable() {
                     <td className="px-6 py-4 font-medium text-gray-900">
                       {item.code || pageIndex * pageSize + index + 1}
                     </td>
-                    <td className="text-center px-4 py-4">{item.bloodDonationRequest?.fullName}</td>
-                    <td className="text-center px-4 py-4 text-red-600 font-semibold">{bloodTypes[item.bloodType]}</td>
-                    <td className="text-center px-4 py-4">{new Date(item.donationDate).toLocaleDateString("vi-VN")}</td>
+                    <td className="text-center px-4 py-4">
+                      {item.bloodDonationRequest?.fullName}
+                    </td>
+                    <td className="text-center px-4 py-4 text-red-600 font-semibold">
+                      {bloodTypes[item.bloodType]}
+                    </td>
+                    <td className="text-center px-4 py-4">
+                      {new Date(item.donationDate).toLocaleDateString("vi-VN")}
+                    </td>
                     <td className="text-center px-4 py-4">{item.volume} ml</td>
-                    <td className={`text-center px-4 py-4 capitalize ${item.status === 0
-                      ? "text-yellow-600" : item.status === 1 ? "text-green-600" : "text-red-600"}`}>
-                      {item.status === 0 ? "Đang hiến máu" : item.status === 1 ? "Đã hiến máu" : "Hủy"}
+                    <td
+                      className={`text-center px-4 py-4 capitalize ${
+                        item.status === 0
+                          ? "text-yellow-600"
+                          : item.status === 1
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {item.status === 0
+                        ? "Đang hiến máu"
+                        : item.status === 1
+                        ? "Đã hiến máu"
+                        : "Hủy"}
                     </td>
                     <td className="text-center px-4 py-4 flex justify-center gap-2">
                       {item.status === 0 && (
@@ -134,15 +173,25 @@ export default function BloodDonationTable() {
                             size="sm"
                             onClick={() => handleUpdateStatus(item.id, 1)}
                             disabled={processingId === item.id}
-                            className={`text-green-500 border border-green-500 hover:bg-green-100 bg-white ${processingId === item.id ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`text-green-500 border border-green-500 hover:bg-green-100 bg-white ${
+                              processingId === item.id
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
                           >
-                            {processingId === item.id ? "Đang xử lý..." : "Hoàn thành"}
+                            {processingId === item.id
+                              ? "Đang xử lý..."
+                              : "Hoàn thành"}
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => handleUpdateStatus(item.id, 2)}
                             disabled={processingId === item.id}
-                            className={`text-red-500 border border-red-500 hover:bg-red-100 bg-white ${processingId === item.id ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`text-red-500 border border-red-500 hover:bg-red-100 bg-white ${
+                              processingId === item.id
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
                           >
                             {processingId === item.id ? "Đang xử lý..." : "Hủy"}
                           </Button>
@@ -150,7 +199,11 @@ export default function BloodDonationTable() {
                       )}
                       <Button
                         variant="outline"
-                        onClick={() => setSelectedDetail(selectedDetail === item.id ? null : item.id)}
+                        onClick={() =>
+                          setSelectedDetail(
+                            selectedDetail === item.id ? null : item.id
+                          )
+                        }
                       >
                         <MoreHorizontal size={16} />
                       </Button>
@@ -162,34 +215,62 @@ export default function BloodDonationTable() {
                       <td colSpan={7} className="px-6 py-4">
                         <div className="grid grid-cols-3 gap-4">
                           <div className="col-span-1">
-                            <p><strong>Họ tên:</strong> {item.bloodDonationRequest?.fullName}</p>
-                            <p><strong>Giới tính:</strong> {item.bloodDonationRequest?.gender ? "Nam" : "Nữ"}</p>
-                            <p><strong>Tuổi:</strong> {item.bloodDonationRequest?.healthCheckForm?.age || "-"}</p>
-                            <p><strong>Email:</strong> {item.bloodDonationRequest?.email}</p>
-                            <p><strong>Địa chỉ:</strong> {item.bloodDonationRequest?.addresss}</p>
-                            <p><strong>Mô tả:</strong> {item.description}</p>
+                            <p>
+                              <strong>Họ tên:</strong>{" "}
+                              {item.bloodDonationRequest?.fullName}
+                            </p>
+                            <p>
+                              <strong>Giới tính:</strong>{" "}
+                              {item.bloodDonationRequest?.gender ? "Nam" : "Nữ"}
+                            </p>
+                            <p>
+                              <strong>Tuổi:</strong>{" "}
+                              {item.bloodDonationRequest?.healthCheckForm
+                                ?.age || "-"}
+                            </p>
+                            <p>
+                              <strong>Email:</strong>{" "}
+                              {item.bloodDonationRequest?.email}
+                            </p>
+                            <p>
+                              <strong>Địa chỉ:</strong>{" "}
+                              {item.bloodDonationRequest?.addresss}
+                            </p>
+                            <p>
+                              <strong>Mô tả:</strong> {item.description}
+                            </p>
                           </div>
                           <div className="col-span-2">
-                            <h3 className="text-sm font-semibold mb-2 text-gray-700">Hình ảnh CCCD</h3>
+                            <h3 className="text-sm font-semibold mb-2 text-gray-700">
+                              Hình ảnh CCCD
+                            </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {item.bloodDonationRequest?.frontUrlIdentity && (
                                 <div className="min-w-[300px]">
                                   <img
-                                    src={item.bloodDonationRequest.frontUrlIdentity}
+                                    src={
+                                      item.bloodDonationRequest.frontUrlIdentity
+                                    }
                                     alt="CCCD mặt trước"
                                     className="w-full max-h-[250px] object-contain border rounded"
                                   />
-                                  <p className="text-sm text-center mt-1">CCCD mặt trước</p>
+                                  <p className="text-sm text-center mt-1">
+                                    CCCD mặt trước
+                                  </p>
                                 </div>
                               )}
                               {item.bloodDonationRequest?.backUrlIdentity && (
                                 <div className="min-w-[300px]">
                                   <img
-                                    src={item.bloodDonationRequest.backUrlIdentity}
+                                    src={
+                                      item.bloodDonationRequest.backUrlIdentity
+                                    }
                                     alt="CCCD mặt sau"
                                     className="w-full max-h-[250px] object-contain border rounded"
                                   />
-                                  <p className="text-sm text-center mt-1">CCCD mặt sau</p>
+                                  <p className="text-sm text-center mt-1">
+                                    CCCD mặt sau
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -211,7 +292,10 @@ export default function BloodDonationTable() {
             >
               Trước
             </button>
-            <span>Trang {pageIndex + 1} / {Math.ceil(filteredData.length / pageSize) || 1}</span>
+            <span>
+              Trang {pageIndex + 1} /{" "}
+              {Math.ceil(filteredData.length / pageSize) || 1}
+            </span>
             <button
               disabled={(pageIndex + 1) * pageSize >= filteredData.length}
               onClick={() => setPageIndex(pageIndex + 1)}

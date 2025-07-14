@@ -1,37 +1,34 @@
 import UserLayout from "@/layouts/UserLayout";
+import BlogManagement from "@/pages/admin/BlogManagement";
+import BlogDetail from "@/pages/public/BlogDetail";
+import BlogList from "@/pages/public/BlogList";
+import FAQ from "@/pages/public/FAQ";
 import HomePage from "@/pages/public/Home";
 import LoginPage from "@/pages/public/Login";
 import RegisterPage from "@/pages/public/Register";
 import BloodDonation from "@/pages/user/BloodDonation";
-import ProfilePage from "@/pages/user/Profile";
 import BloodDonationHistory from "@/pages/user/BloodDonationHistory";
-import FAQ from "@/pages/public/FAQ";
+import ProfilePage from "@/pages/user/Profile";
 
 import AdminLayout from "@/layouts/AdminLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AccountManagement from "@/pages/admin/MemberManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
-import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
 import BloodRawTable from "@/pages/bloodStorage/BloodDonationHistory";
 import BloodComponentsTable from "@/pages/bloodStorage/BloodSotage";
 import EmergencyBloodRequests from "@/pages/bloodStorage/EmergencyBloodRequests";
 import BloodExportPage from "@/pages/bloodStorage/BloodExportPage";
 
-
-
-import BloodDonationScheduleTable from "@/pages/nurse/BloodDonationTable";
-import BloodDonationRequestsTable from "@/pages/nurse/BloodDonationRequestsTable";
-import NurseDashboard from "@/pages/nurse/Dashboard";
 import NurseLayout from "@/layouts/NurseLayout";
+import BloodDonationRequestsTable from "@/pages/nurse/BloodDonationRequestsTable";
+import BloodDonationScheduleTable from "@/pages/nurse/BloodDonationTable";
+import NurseDashboard from "@/pages/nurse/Dashboard";
 
-import { createBrowserRouter } from "react-router-dom";
-import NurseManagement from "@/pages/admin/NurseManagement";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
-import Unauthorized from "@/pages/public/Unauthorized";
+import NurseManagement from "@/pages/admin/NurseManagement";
 import SupervisorManagement from "@/pages/admin/SupervisorManagement";
-
 
 export const router = createBrowserRouter([
   {
@@ -74,6 +71,14 @@ export const router = createBrowserRouter([
         path: "/blood-donation-history",
         element: <BloodDonationHistory />,
       },
+      {
+        path: "/blogs",
+        element: <BlogList />,
+      },
+      {
+        path: "/blogs/:id",
+        element: <BlogDetail />,
+      },
     ],
   },
 
@@ -89,6 +94,7 @@ export const router = createBrowserRouter([
       { path: "member-management", element: <AccountManagement /> },
       { path: "nurse-management", element: <NurseManagement /> },
       { path: "supervisor-management", element: <SupervisorManagement /> },
+      { path: "blog-management", element: <BlogManagement /> },
     ],
   },
 
@@ -120,6 +126,8 @@ export const router = createBrowserRouter([
       { path: "nurse-dashboard", element: <NurseDashboard /> },
       { path: "blood-donation-table", element: <BloodDonationScheduleTable /> },
       { path: "blood-requests-table", element: <BloodDonationRequestsTable /> },
+      { path: "blood-emergency-requests", element: <EmergencyRequest /> },
+      { path: "donor-management", element: <DonorManagementPage /> },
     ],
   },
 
