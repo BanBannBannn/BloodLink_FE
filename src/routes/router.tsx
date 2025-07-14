@@ -19,6 +19,7 @@ import BloodRawTable from "@/pages/bloodStorage/BloodDonationHistory";
 import BloodComponentsTable from "@/pages/bloodStorage/BloodSotage";
 import EmergencyBloodRequests from "@/pages/bloodStorage/EmergencyBloodRequests";
 import BloodExportPage from "@/pages/bloodStorage/BloodExportPage";
+import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
 
 import NurseLayout from "@/layouts/NurseLayout";
 import BloodDonationRequestsTable from "@/pages/nurse/BloodDonationRequestsTable";
@@ -29,6 +30,10 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
 import NurseManagement from "@/pages/admin/NurseManagement";
 import SupervisorManagement from "@/pages/admin/SupervisorManagement";
+import { createBrowserRouter } from "react-router-dom";
+import EmergencyRequest from "@/pages/nurse/EmergencyRequest";
+import DonorManagementPage from "@/pages/nurse/DonatorManagement";
+import Unauthorized from "@/pages/public/Unauthorized";
 
 export const router = createBrowserRouter([
   {
