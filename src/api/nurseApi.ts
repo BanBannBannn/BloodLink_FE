@@ -53,8 +53,6 @@ export const updateEmergencyBloodRequest = async (
   return response;
 };
 
-import apiClient from "./apiClient";
-
 // Donor related interfaces
 export interface User {
   id: string
