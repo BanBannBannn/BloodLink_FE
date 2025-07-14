@@ -20,10 +20,10 @@ export default function HealthCheckFormModal({ request, onClose }: Props) {
     const existing = request.healthCheckForm;
     const isViewMode = request.status !== 0 || !!existing;
 
-    const [age, setAge] = useState(existing?.age || 0);
-    const [weight, setWeight] = useState(existing?.weight || 0);
+    const [age, setAge] = useState(existing?.age );
+    const [weight, setWeight] = useState(existing?.weight );
     const [volume, setVolume] = useState(existing?.volumeBloodDonated || 250);
-    const [hemoglobin, setHemoglobin] = useState(existing?.hemoglobin || 0);
+    const [hemoglobin, setHemoglobin] = useState(existing?.hemoglobin );
 
     const [isInfectiousDisease, setIsInfectiousDisease] = useState(existing?.isInfectiousDisease || false);
     const [isPregnant, setIsPregnant] = useState(existing?.isPregnant || false);

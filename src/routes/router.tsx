@@ -16,9 +16,9 @@ import AccountManagement from "@/pages/admin/MemberManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
 import BloodRawTable from "@/pages/bloodStorage/BloodDonationHistory";
-import BloodHistoryTable from "@/pages/bloodStorage/BloodHistoryTable";
-import BloodRequestTable from "@/pages/bloodStorage/BloodRequestTable";
 import BloodComponentsTable from "@/pages/bloodStorage/BloodSotage";
+import EmergencyBloodRequests from "@/pages/bloodStorage/EmergencyBloodRequests";
+import BloodExportPage from "@/pages/bloodStorage/BloodExportPage";
 import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
 
 import NurseLayout from "@/layouts/NurseLayout";
@@ -30,10 +30,10 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
 import NurseManagement from "@/pages/admin/NurseManagement";
 import SupervisorManagement from "@/pages/admin/SupervisorManagement";
-import EmergencyRequest from "@/pages/nurse/EmergencyRequest";
-import Unauthorized from "@/pages/public/Unauthorized";
 import { createBrowserRouter } from "react-router-dom";
+import EmergencyRequest from "@/pages/nurse/EmergencyRequest";
 import DonorManagementPage from "@/pages/nurse/DonatorManagement";
+import Unauthorized from "@/pages/public/Unauthorized";
 
 export const router = createBrowserRouter([
   {
@@ -114,8 +114,8 @@ export const router = createBrowserRouter([
       { path: "supervisor-dashboard", element: <SupervisorDashboard /> },
       { path: "blood-donation-history", element: <BloodRawTable /> },
       { path: "blood-sotage", element: <BloodComponentsTable /> },
-      { path: "history", element: <BloodHistoryTable /> },
-      { path: "blood-requests", element: <BloodRequestTable /> },
+      { path: "emergency-blood-requests", element: <EmergencyBloodRequests /> },
+      { path: "export-blood-requests", element: <BloodExportPage /> },
  
     ],
   },
