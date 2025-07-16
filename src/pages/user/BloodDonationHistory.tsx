@@ -14,6 +14,7 @@ import {
   Loader2,
   CalendarRange,
   Clock,
+  CircleCheckBig,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
@@ -42,10 +43,15 @@ const STATUS_MAP = [
   },
   { label: "Đã từ chối", color: "bg-red-100 text-red-800", icon: XCircle },
   { label: "Đã hủy", color: "bg-gray-100 text-gray-800", icon: XCircle },
+  {
+    label: "Hoàn thành",
+    color: "bg-green-100 text-green-800",
+    icon: CircleCheckBig,
+  },
 ];
 
 // Define type for donation record
-interface BloodDonationRecord {
+export interface BloodDonationRecord {
   id: string;
   userId: string;
   bloodType: number;
@@ -119,9 +125,8 @@ function BloodDonationHistoryPage() {
       try {
         setLoading(true);
         const response = await bloodRequestHistory();
-        console.log(response.data.records);
         setHistory(response.data.records || []);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         setHistory([]);
       } finally {
@@ -199,11 +204,14 @@ function BloodDonationHistoryPage() {
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${statusInfo.color} border border-opacity-30 border-red-300 group-hover:shadow-md transition-all`}
                         >
-                          {React.createElement(statusInfo.icon, { className: "w-4 h-4" })} {statusInfo.label}
+                          {React.createElement(statusInfo.icon, {
+                            className: "w-4 h-4",
+                          })}{" "}
+                          {statusInfo.label}
                         </span>
                         {donation.status === 0 && (
                           <button
-                            className="ml-2 px-3 py-1 text-xs font-semibold rounded bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 transition-all"
+                            className="ml-2 px-3 py-1 text-xs font-semibold rounded bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 transition-all cursor-pointer"
                             onClick={() => handleOpenCancelDialog(donation.id)}
                           >
                             Hủy
