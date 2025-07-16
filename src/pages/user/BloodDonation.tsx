@@ -1,4 +1,4 @@
-import { bloodDonationRequest } from "@/api/userApi";
+import { bloodDonationRequest, bloodRequestHistory } from "@/api/userApi";
 import { Stepper } from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,7 @@ import { bloodTypes, timeSlots } from "@/constants/constants";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, isToday } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import type { BloodDonationRecord } from "./BloodDonationHistory";
 
 const Step1Schema = z.object({
   donatedDateRequest: z.string().nonempty("Vui lòng chọn ngày"),
@@ -108,6 +109,8 @@ function BloodDonation() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showPendingRequestDialog, setShowPendingRequestDialog] =
+    useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -116,8 +119,7 @@ function BloodDonation() {
     setErrorMsg("");
     const dataToSubmit = { ...form1.getValues(), ...data, reasonReject: "" };
     try {
-      const response = await bloodDonationRequest(dataToSubmit);
-      console.log(response.data);
+      await bloodDonationRequest(dataToSubmit);
       setShowSuccessDialog(true);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -145,6 +147,20 @@ function BloodDonation() {
     }
     return false;
   };
+
+  useEffect(() => {
+    const checkPendingRequest = async () => {
+      const response = await bloodRequestHistory();
+      if (
+        response.data.records.find((req: BloodDonationRecord) =>
+          [0, 1].includes(req.status)
+        )
+      ) {
+        setShowPendingRequestDialog(true);
+      }
+    };
+    checkPendingRequest();
+  }, [showPendingRequestDialog]);
 
   return (
     <div className="w-full">
@@ -180,7 +196,10 @@ function BloodDonation() {
                             Ngày hiến máu
                           </FormLabel>
                           <FormControl>
-                            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                            <Popover
+                              open={calendarOpen}
+                              onOpenChange={setCalendarOpen}
+                            >
                               <PopoverTrigger className="!flex justify-start">
                                 <Button
                                   type="button"
@@ -197,10 +216,7 @@ function BloodDonation() {
                                   onClick={() => setCalendarOpen(true)}
                                 >
                                   {field.value ? (
-                                    format(
-                                      new Date(field.value),
-                                      "dd-MM-yyyy"
-                                    )
+                                    format(new Date(field.value), "dd-MM-yyyy")
                                   ) : (
                                     <span>Chọn ngày</span>
                                   )}
@@ -585,6 +601,31 @@ function BloodDonation() {
               }}
             >
               Xem lịch sử đăng ký
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={showPendingRequestDialog}
+        onOpenChange={setShowPendingRequestDialog}
+      >
+        <DialogContent onInteractOutside={(e: Event) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Thông báo</DialogTitle>
+            <DialogDescription>
+              Bạn đang có 1 yêu cầu hiến máu chưa thực hiện xong. Bạn có thể hủy
+              hoặc thực hiện xong yêu cầu hiến máu mới được đăng kí tiếp
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              className="cursor-pointer"
+              onClick={() => {
+                setShowPendingRequestDialog(false);
+                navigate("/blood-donation-history");
+              }}
+            >
+              Xác nhận
             </Button>
           </DialogFooter>
         </DialogContent>
