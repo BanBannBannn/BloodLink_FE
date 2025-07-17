@@ -73,6 +73,8 @@ function RegisterPage() {
   const [open, setOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [identityFrontPreview, setIdentityFrontPreview] = useState<string | null>(null);
+  const [identityBackPreview, setIdentityBackPreview] = useState<string | null>(null);
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -113,6 +115,8 @@ function RegisterPage() {
       toast.success("Đăng kí thành công");
       form.reset();
       setIsLoading((prev) => !prev);
+      setIdentityFrontPreview(null);
+      setIdentityBackPreview(null);
       navigate("/login");
       return;
     }
@@ -354,17 +358,27 @@ function RegisterPage() {
                     <FormItem>
                       <FormLabel>Ảnh CCCD mặt trước</FormLabel>
                       <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              onChange(file);
-                            }
-                          }}
-                          className="mt-1 h-11 rounded-lg border-gray-200 focus:border-red-500 focus:ring-red-500"
-                        />
+                        <>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                onChange(file);
+                                setIdentityFrontPreview(URL.createObjectURL(file));
+                              }
+                            }}
+                            className="mt-1 h-11 rounded-lg border-gray-200 focus:border-red-500 focus:ring-red-500"
+                          />
+                          {identityFrontPreview && (
+                            <img
+                              src={identityFrontPreview}
+                              alt="CCCD mặt trước"
+                              className="mt-2 max-h-40 rounded border"
+                            />
+                          )}
+                        </>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -378,17 +392,27 @@ function RegisterPage() {
                     <FormItem>
                       <FormLabel>Ảnh CCCD mặt sau</FormLabel>
                       <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              onChange(file);
-                            }
-                          }}
-                          className="mt-1 h-11 rounded-lg border-gray-200 focus:border-red-500 focus:ring-red-500"
-                        />
+                        <>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                onChange(file);
+                                setIdentityBackPreview(URL.createObjectURL(file));
+                              }
+                            }}
+                            className="mt-1 h-11 rounded-lg border-gray-200 focus:border-red-500 focus:ring-red-500"
+                          />
+                          {identityBackPreview && (
+                            <img
+                              src={identityBackPreview}
+                              alt="CCCD mặt sau"
+                              className="mt-2 max-h-40 rounded border"
+                            />
+                          )}
+                        </>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
