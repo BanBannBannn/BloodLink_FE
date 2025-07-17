@@ -1,40 +1,12 @@
-import { Link } from "react-router-dom";
 import {
   Facebook,
-  Instagram,
-  Youtube,
-  Mail,
-  Phone,
-  MapPin,
   Heart,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Youtube,
 } from "lucide-react";
-
-const footerLinks = [
-  {
-    title: "Về chúng tôi",
-    links: [
-      { name: "Giới thiệu", href: "/about" },
-      { name: "Đội ngũ", href: "/team" },
-      { name: "Liên hệ", href: "/contact" },
-    ],
-  },
-  {
-    title: "Dịch vụ",
-    links: [
-      { name: "Hiến máu", href: "/blood-donation" },
-      { name: "Tìm kiếm máu", href: "/blood-search" },
-      { name: "Hỗ trợ khẩn cấp", href: "/emergency" },
-    ],
-  },
-  {
-    title: "Tài nguyên",
-    links: [
-      { name: "Nhóm máu", href: "/blood-types" },
-      { name: "Câu hỏi thường gặp", href: "/faq" },
-      { name: "Tin tức", href: "/news" },
-    ],
-  },
-];
 
 const socialLinks = [
   {
@@ -61,17 +33,17 @@ function Footer() {
   return (
     <footer className="bg-white border-t">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 py-12">
           {/* Logo and Description */}
-          <div className="lg:col-span-2">
+          <div className="md:col-span-2">
             <div className="flex items-center gap-2">
               <Heart className="h-8 w-8 text-red-600" />
               <span className="text-xl font-bold text-gray-900">BloodLink</span>
             </div>
             <p className="mt-4 text-gray-600 text-sm leading-relaxed">
               BloodLink là nền tảng kết nối người hiến máu và người cần máu, góp
-              phần xây dựng cộng đồng hiến máu tình nguyện, lan tỏa những giá trị
-              nhân văn tốt đẹp.
+              phần xây dựng cộng đồng hiến máu tình nguyện, lan tỏa những giá
+              trị nhân văn tốt đẹp.
             </p>
             <div className="flex items-center gap-4 mt-6">
               {socialLinks.map((item) => (
@@ -88,24 +60,18 @@ function Footer() {
             </div>
           </div>
 
-          {/* Links */}
-          {footerLinks.map((group) => (
-            <div key={group.title}>
-              <h3 className="font-semibold text-gray-900">{group.title}</h3>
-              <ul className="mt-4 space-y-3">
-                {group.links.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      to={link.href}
-                      className="text-gray-600 hover:text-red-600 text-sm transition-colors"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+          {/* Map */}
+          <div className="md:col-span-3">
+            <div className="rounded-lg overflow-hidden shadow">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.163958945935!2d106.79814837480637!3d10.875131189279651!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d8a6b19d6763%3A0x143c54525028b2e!2sVNUHCM%20Student%20Cultural%20House!5e0!3m2!1sen!2s!4v1752745803478!5m2!1sen!2s"
+                width="100%"
+                height="300"
+                style={{ border: 0 }}
+                loading="lazy"
+              ></iframe>
             </div>
-          ))}
+          </div>
         </div>
 
         {/* Contact Info */}
@@ -121,7 +87,7 @@ function Footer() {
             </div>
             <div className="flex items-center gap-2 text-gray-600">
               <MapPin className="h-4 w-4" />
-              <span className="text-sm">Hà Nội, Việt Nam</span>
+              <span className="text-sm">Hồ Chí Minh, Việt Nam</span>
             </div>
           </div>
         </div>
@@ -137,4 +103,4 @@ function Footer() {
   );
 }
 
-export default Footer; 
+export default Footer;

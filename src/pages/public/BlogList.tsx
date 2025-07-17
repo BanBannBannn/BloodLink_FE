@@ -117,7 +117,7 @@ const BlogList: React.FC = () => {
               whileHover="hover"
               className="group"
             >
-              <Card className="h-full cursor-pointer border-0 bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
+              <Card className="h-full cursor-pointer border-0 bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 py-0">
                 <div className="relative overflow-hidden">
                   <motion.img
                     src={post.imageUrl}
