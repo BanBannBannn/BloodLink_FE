@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Filter } from "lucide-react";
+import SupervisorExportSummaryDashboard from "./emergency-request-summary-dashboard";
 
 export default function EmergencyBloodRequestsPage() {
   const { data: requests, refresh } = useEmergencyRequests();
@@ -38,18 +39,20 @@ export default function EmergencyBloodRequestsPage() {
       .then((res) => setBloodGroups(res.data || []))
       .catch((err) => console.error("Error fetching blood groups", err));
   }, []);
-  const token = localStorage.getItem("token")
+  const token = localStorage.getItem("token");
   const handleApprove = async () => {
     if (!selectedRequest) return;
     try {
-      await axiosInstance.put(`/emergency-blood-requests/${selectedRequest.id}`, {
-        address: selectedRequest.address,
-        volume: selectedRequest.volume,
-        bloodComponentId: selectedRequest.bloodComponent?.id,
-        bloodGroupId: selectedRequest.bloodGroup?.id,
-        reasonReject: "",
-        status: 2,
-      },
+      await axiosInstance.put(
+        `/emergency-blood-requests/${selectedRequest.id}`,
+        {
+          address: selectedRequest.address,
+          volume: selectedRequest.volume,
+          bloodComponentId: selectedRequest.bloodComponent?.id,
+          bloodGroupId: selectedRequest.bloodGroup?.id,
+          reasonReject: "",
+          status: 2,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -60,26 +63,28 @@ export default function EmergencyBloodRequestsPage() {
       alert("Đã chuyển sang trạng thái 'Đang xử lý'");
     } catch (error: any) {
       alert(
-
         error.response?.data?.title ||
-        error.response?.data?.message ||
-        "Có lỗi xảy ra khi từ duyệt!");
+          error.response?.data?.message ||
+          "Có lỗi xảy ra khi từ duyệt!"
+      );
     }
     console.log("Token:", localStorage.getItem("token"));
-
   };
 
   const handleReject = async () => {
     if (!selectedRequest || !rejectReason.trim()) return;
     try {
-      await axiosInstance.put(`/emergency-blood-requests/${selectedRequest.id}`, {
-        address: selectedRequest.address,
-        volume: selectedRequest.volume,
-        bloodComponentId: selectedRequest.bloodComponent?.id,
-        bloodGroupId: selectedRequest.bloodGroup?.id,
-        reasonReject: "",
-        status: 1,
-      });
+      await axiosInstance.put(
+        `/emergency-blood-requests/${selectedRequest.id}`,
+        {
+          address: selectedRequest.address,
+          volume: selectedRequest.volume,
+          bloodComponentId: selectedRequest.bloodComponent?.id,
+          bloodGroupId: selectedRequest.bloodGroup?.id,
+          reasonReject: "",
+          status: 1,
+        }
+      );
 
       setShowRejectPopup(false);
       setSelectedRequest(null);
@@ -89,14 +94,17 @@ export default function EmergencyBloodRequestsPage() {
       console.error("Error rejecting", error);
       alert(
         error.response?.data?.title ||
-        error.response?.data?.message ||
-        "Có lỗi xảy ra khi từ chối!");
+          error.response?.data?.message ||
+          "Có lỗi xảy ra khi từ chối!"
+      );
     }
   };
 
   const filtered = requests.filter((r) => {
-    const matchGroup = groupFilter === "all" || r.bloodGroup?.id === groupFilter;
-    const matchStatus = statusFilter === "all" || String(r.status) === statusFilter;
+    const matchGroup =
+      groupFilter === "all" || r.bloodGroup?.id === groupFilter;
+    const matchStatus =
+      statusFilter === "all" || String(r.status) === statusFilter;
     return matchGroup && matchStatus;
   });
 
@@ -108,7 +116,7 @@ export default function EmergencyBloodRequestsPage() {
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">Yêu cầu xuất máu khẩn cấp</h1>
-
+      <SupervisorExportSummaryDashboard />
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="relative">
@@ -169,7 +177,9 @@ export default function EmergencyBloodRequestsPage() {
             ) : (
               paginatedData.map((req) => (
                 <tr key={req.id} className="border-t">
-                  <td className="px-6 py-4 font-medium text-gray-900">{req.code}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">
+                    {req.code}
+                  </td>
                   <td className="px-4 py-2">{req.address}</td>
                   <td className="px-4 py-2">{req.volume} ml</td>
                   <td className="px-10 py-4 text-red-600 font-semibold">
@@ -180,10 +190,10 @@ export default function EmergencyBloodRequestsPage() {
                     {req.status === 0
                       ? "Đang chờ"
                       : req.status === 1
-                        ? "Từ chối"
-                        : req.status === 2
-                          ? "Đang xử lý"
-                          : "Hoàn thành"}
+                      ? "Từ chối"
+                      : req.status === 2
+                      ? "Đang xử lý"
+                      : "Hoàn thành"}
                   </td>
                   <td className="px-4 py-2 text-center">
                     {req.status === 0 && (
@@ -236,7 +246,10 @@ export default function EmergencyBloodRequestsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 justify-between">
             <AlertDialogCancel>Đóng</AlertDialogCancel>
-            <Button variant="destructive" onClick={() => setShowRejectPopup(true)}>
+            <Button
+              variant="destructive"
+              onClick={() => setShowRejectPopup(true)}
+            >
               Từ chối
             </Button>
             <AlertDialogAction onClick={handleApprove}>Duyệt</AlertDialogAction>
@@ -249,7 +262,8 @@ export default function EmergencyBloodRequestsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Nhập lý do từ chối</AlertDialogTitle>
             <AlertDialogDescription>
-              Vui lòng nhập lý do từ chối yêu cầu <strong>{selectedRequest?.code}</strong>.
+              Vui lòng nhập lý do từ chối yêu cầu{" "}
+              <strong>{selectedRequest?.code}</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <textarea
@@ -262,7 +276,10 @@ export default function EmergencyBloodRequestsPage() {
             <AlertDialogCancel onClick={() => setShowRejectPopup(false)}>
               Hủy
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleReject} disabled={!rejectReason.trim()}>
+            <AlertDialogAction
+              onClick={handleReject}
+              disabled={!rejectReason.trim()}
+            >
               Xác nhận từ chối
             </AlertDialogAction>
           </AlertDialogFooter>
