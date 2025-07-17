@@ -1,3 +1,4 @@
+import type { ProfileFormData } from "@/pages/user/Profile";
 import apiClient from "./apiClient";
 
 type BloodRequest = {
@@ -45,4 +46,23 @@ export const getBlogs = async () => {
 
 export const getBlogById = async (id: string) => {
   return await apiClient.get(`/blogs/${id}`);
+};
+
+export const uploadImage = async (image: File) => {
+  return await apiClient.post(
+    "/file",
+    { File: image, Directory: "image" },
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};
+
+export const updateUserInfo = async (
+  userId: string,
+  updatedData: Omit<ProfileFormData, 'gender'> & { gender: string | boolean }
+) => {
+  return await apiClient.put(`/user/${userId}`, updatedData);
 };
