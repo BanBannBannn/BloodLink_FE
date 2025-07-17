@@ -39,3 +39,12 @@ export const getSupvisorDashboard = async (): Promise<SupervisorDashboardRespons
   const response = await apiClient.get<SupervisorDashboardResponse | null>("/dashboards/supervisor")
   return response.data
 }
+
+// Tổng quan yêu cầu xuất máu 2
+export interface ExportRequestStatsv2 {
+  total: number;
+  pending: number;
+  processing: number;
+  finished: number;
+  rejected: number;
+}
