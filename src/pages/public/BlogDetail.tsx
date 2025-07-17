@@ -103,8 +103,8 @@ const BlogDetail: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50">
-      <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+    <div className="h-full bg-gradient-to-br">
+      <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
         <motion.button
           whileHover={{ x: -5 }}
           whileTap={{ scale: 0.95 }}
@@ -121,13 +121,13 @@ const BlogDetail: React.FC = () => {
           animate="in"
           exit="exit"
           transition={pageTransition}
-          className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden"
+          className="bg-white/90 backdrop-blur-sm rounded-t-3xl overflow-hidden"
         >
           <div className="relative">
             <motion.img
               src={blog.imageUrl}
               alt={blog.title}
-              className="w-full h-80 object-cover"
+              className="w-full object-cover"
               initial={{ scale: 1.1 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.6 }}
