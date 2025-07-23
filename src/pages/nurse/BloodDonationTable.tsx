@@ -33,13 +33,15 @@ export default function BloodDonationTable() {
   const pageSize = 5;
 
   const { data, loading, error, refresh } = useBloodDonation({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleUpdateStatus = async (id: string, status: number) => {
     setProcessingId(id);
     setAlertMessage(null);
     try {
       await apiClient.put(`/blood-donations/${id}/status?status=${status}`);
-      window.location.reload();
+      setSuccessMessage(status === 1 ? "Cập nhật trạng thái: Đã hiến máu" : "Đã từ chối thành công");
+      refresh();
     } catch (err: any) {
       const { message, detail } = err.response?.data || {};
       setAlertMessage(
@@ -49,6 +51,7 @@ export default function BloodDonationTable() {
       setProcessingId(null);
     }
   };
+
 
   const filteredData = data.filter((item) => {
     const nameMatch = item.bloodDonationRequest?.fullName
@@ -152,19 +155,18 @@ export default function BloodDonationTable() {
                     </td>
                     <td className="text-center px-4 py-4">{item.volume} ml</td>
                     <td
-                      className={`text-center px-4 py-4 capitalize ${
-                        item.status === 0
-                          ? "text-yellow-600"
-                          : item.status === 1
+                      className={`text-center px-4 py-4 capitalize ${item.status === 0
+                        ? "text-yellow-600"
+                        : item.status === 1
                           ? "text-green-600"
                           : "text-red-600"
-                      }`}
+                        }`}
                     >
                       {item.status === 0
                         ? "Đang hiến máu"
                         : item.status === 1
-                        ? "Đã hiến máu"
-                        : "Hủy"}
+                          ? "Đã hiến máu"
+                          : "Hủy"}
                     </td>
                     <td className="text-center px-4 py-4 flex justify-center gap-2">
                       {item.status === 0 && (
@@ -173,11 +175,10 @@ export default function BloodDonationTable() {
                             size="sm"
                             onClick={() => handleUpdateStatus(item.id, 1)}
                             disabled={processingId === item.id}
-                            className={`text-green-500 border border-green-500 hover:bg-green-100 bg-white ${
-                              processingId === item.id
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
-                            }`}
+                            className={`text-green-500 border border-green-500 hover:bg-green-100 bg-white ${processingId === item.id
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                              }`}
                           >
                             {processingId === item.id
                               ? "Đang xử lý..."
@@ -187,11 +188,10 @@ export default function BloodDonationTable() {
                             size="sm"
                             onClick={() => handleUpdateStatus(item.id, 2)}
                             disabled={processingId === item.id}
-                            className={`text-red-500 border border-red-500 hover:bg-red-100 bg-white ${
-                              processingId === item.id
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
-                            }`}
+                            className={`text-red-500 border border-red-500 hover:bg-red-100 bg-white ${processingId === item.id
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                              }`}
                           >
                             {processingId === item.id ? "Đang xử lý..." : "Hủy"}
                           </Button>
@@ -304,6 +304,21 @@ export default function BloodDonationTable() {
               Sau
             </button>
           </div>
+          
+          <AlertDialog
+            open={!!successMessage}
+            onOpenChange={(open) => !open && setSuccessMessage(null)}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Thành công</AlertDialogTitle>
+                <AlertDialogDescription>{successMessage}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogAction onClick={() => setSuccessMessage(null)}>Đóng</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>

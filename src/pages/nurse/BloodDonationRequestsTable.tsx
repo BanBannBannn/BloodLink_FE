@@ -32,6 +32,7 @@ export default function BloodDonationRequestsTable() {
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [showHealthForm, setShowHealthForm] = useState(false);
+
   const [viewHealthForm, setViewHealthForm] = useState<any | null>(null);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -133,6 +134,10 @@ export default function BloodDonationRequestsTable() {
         return <span>-</span>;
     }
   };
+
+  function fetchData() {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -257,17 +262,30 @@ export default function BloodDonationRequestsTable() {
                         <EyeIcon className="w-5 h-5 inline" />
                       </button>
                     </td>
-
                     <td className="text-center px-4 py-4">
                       <div className="flex justify-center items-center gap-2">
-                        {item.status === 0 && isToday(item.createdDate) && (
+                        {item.healthCheckForm ? (
                           <button
-                            onClick={() => setViewHealthForm(item)}
+                            onClick={() => {
+                              setSelectedRequest(item);
+                              setViewHealthForm(item);
+                            }}
+                            title="Xem phiếu kiểm tra"
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <EyeIcon className="w-5 h-5" />
+                          </button>
+                        ) : item.status === 0 && isToday(item.createdDate) ? (
+                          <button
+                            onClick={() => {
+                              setSelectedRequest(item);
+                              setViewHealthForm(item);
+                            }}
                             className="px-3 py-1 border border-blue-500 text-blue-600 rounded hover:bg-blue-50 text-xs font-medium"
                           >
                             Điền form
                           </button>
-                        )}
+                        ) : null}
                         <button
                           onClick={() =>
                             setExpandedRowId(expandedRowId === item.id ? null : item.id)
@@ -359,7 +377,7 @@ export default function BloodDonationRequestsTable() {
             onClose={(shouldRefresh) => {
               setViewHealthForm(null);
               if (shouldRefresh) {
-                refresh(); 
+                refresh();
               }
             }}
           />
@@ -490,10 +508,14 @@ export default function BloodDonationRequestsTable() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {viewHealthForm && (
+        {viewHealthForm && selectedRequest && (
           <HealthCheckFormModal
-            request={viewHealthForm}
-            onClose={() => setViewHealthForm(null)}
+            request={selectedRequest}
+            onClose={(shouldRefresh) => {
+              setSelectedRequest(null);
+              setViewHealthForm(null);
+              if (shouldRefresh) refresh(); 
+            }}
           />
         )}
       </div>
