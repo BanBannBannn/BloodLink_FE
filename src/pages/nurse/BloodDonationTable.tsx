@@ -41,7 +41,7 @@ export default function BloodDonationTable() {
     try {
       await apiClient.put(`/blood-donations/${id}/status?status=${status}`);
       setSuccessMessage(status === 1 ? "Cập nhật trạng thái: Đã hiến máu" : "Đã từ chối thành công");
-      refresh();
+      await refresh();
     } catch (err: any) {
       const { message, detail } = err.response?.data || {};
       setAlertMessage(
