@@ -1,10 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import apiClient from "@/api/apiClient";
-// import { ReactNode } from "react";
 
 export interface BloodDonation {
   code: number;
-  // [x: string]: number;
   bloodDonationRequest: {
     code: string;
     frontUrlIdentity: any;
@@ -17,8 +15,6 @@ export interface BloodDonation {
       age?: number;
     };
   };
-  frontUrlIdentity?: string;
-  backUrlIdentity?: string;
   donationDate: string | number | Date;
   volume: number;
   description: string;
@@ -47,35 +43,37 @@ export default function useBloodDonation(params: FetchParams = {}) {
 
   const queryParams = useMemo(() => ({ ...params }), [JSON.stringify(params)]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await apiClient.get("/blood-donations/search", {
-          params: queryParams,
-          signal: controller.signal,
-        });
-        setData(response.data.records || []);
-        setTotalRecords(response.data.totalRecords || 0);
-      } catch (err: any) {
-        if (err.name !== "CanceledError") {
-          console.error("Fetch blood donations failed", err);
-          setError(err.message || "Lỗi khi tải dữ liệu");
-        }
-      } finally {
-        setLoading(false);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await apiClient.get("/blood-donations/search", {
+        params: queryParams,
+      });
+      setData(response.data.records || []);
+      setTotalRecords(response.data.totalRecords || 0);
+    } catch (err: any) {
+      if (err.name !== "CanceledError") {
+        console.error("Fetch blood donations failed", err);
+        setError(err.message || "Lỗi khi tải dữ liệu");
       }
-    };
-
-    fetchData();
-
-    return () => {
-      controller.abort();
-    };
+    } finally {
+      setLoading(false);
+    }
   }, [queryParams]);
 
-  return { data, loading, error, totalRecords, refresh: () => setData([...data]) };
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchData();
+
+    return () => controller.abort();
+  }, [fetchData]);
+
+  return {
+    data,
+    loading,
+    error,
+    totalRecords,
+    refresh: fetchData, 
+  };
 }

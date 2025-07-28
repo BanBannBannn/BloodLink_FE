@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 
 export type EmergencyRequest = {
+  [x: string]: any;
   id: string;
   code: string;
   status: number;

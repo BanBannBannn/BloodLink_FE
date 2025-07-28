@@ -133,6 +133,10 @@ export default function BloodStorageTable() {
     }
   };
 
+  function refresh() {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <BloodStorageDashboard />
@@ -421,7 +425,7 @@ export default function BloodStorageTable() {
                       setPreparingEntry(null);
                       setPageIndex(0);
                       setExpandedRowId(null);
-                      window.location.reload();
+                      refresh();
                     } catch (err: any) {
                       setAlertMessage(err.response?.data?.title || "Điều chế thất bại!");
                     }

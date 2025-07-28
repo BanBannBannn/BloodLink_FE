@@ -46,6 +46,7 @@ export const statusMapEmergencyRequest: Record<number, string> = {
   3: "Hoàn tất",
   4: "Hủy",
 };
+
 export const BloodStorageStatus =
   ["Chưa kiểm tra",
     "An toàn ",
