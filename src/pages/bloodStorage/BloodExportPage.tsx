@@ -8,6 +8,7 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,6 +21,7 @@ export default function BloodExportPage() {
   const [availableBloods, setAvailableBloods] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchRequests = async () => {
     try {
@@ -31,21 +33,17 @@ export default function BloodExportPage() {
   };
 
   const fetchAvailableBloods = async (id: string) => {
-    console.log("Request ID:", id);
     try {
       const res = await axiosInstance.get(
         `/blood-storage/available-bloods?emergencyBloodRequestId=${id}`
       );
       const result = res.data;
-
-      console.log("Available bloods response:", result);
       setAvailableBloods(Array.isArray(result.records) ? result.records : []);
     } catch (err) {
       console.error("Lỗi khi tải kho máu:", err);
       setAvailableBloods([]);
     }
   };
-
 
   useEffect(() => {
     fetchRequests();
@@ -60,37 +58,24 @@ export default function BloodExportPage() {
   const handleConfirmExport = async () => {
     if (!selectedRequest || selectedIds.length === 0) return;
 
-    const requestId = selectedRequest.id;
-
-    const payload = {
-      bloodStorageIds: selectedIds,
-    };
-
-    console.log("Gửi xuất máu:", {
-      requestId,
-      payload,
-    });
-
     try {
       await axiosInstance.post(
-        `/blood-issues?EmergencyBloodRequestId=${requestId}`,
-        payload
+        `/blood-issues?EmergencyBloodRequestId=${selectedRequest.id}`,
+        { bloodStorageIds: selectedIds }
       );
-      alert("Xuất máu thành công!");
       setConfirmOpen(false);
       setExpandedId(null);
       setSelectedRequest(null);
       setSelectedIds([]);
       await fetchRequests();
     } catch (err: any) {
-      console.error("Lỗi khi xuất máu:", err);
-      alert(
-        err.response?.data?.title ||
-        err.response?.data?.message ||
-         "Xuất máu thất bại!");
+      const error =
+        typeof err.response?.data === "string"
+          ? err.response.data
+          : err.response?.data?.message || "Xuất máu thất bại!";
+      setErrorMessage(error);
     }
   };
-
 
   return (
     <div className="p-6">
@@ -179,6 +164,7 @@ export default function BloodExportPage() {
         </table>
       </div>
 
+      {/* Xác nhận xuất máu */}
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -193,6 +179,19 @@ export default function BloodExportPage() {
             <AlertDialogAction onClick={handleConfirmExport}>
               Xác nhận
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Hiển thị lỗi*/}
+      <AlertDialog open={!!errorMessage} onOpenChange={() => setErrorMessage(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Lỗi</AlertDialogTitle>
+            <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setErrorMessage(null)}>Đóng</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

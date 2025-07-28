@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import useBloodDonationRequests from "@/hooks/useBloodDonationRequests";
-import { Button } from "@/components/ui/button";
-import apiClient from "@/api/apiClient";
 import HealthCheckFormModal from "./HealthCheckFormModal";
 import { Calendar, Droplet, Filter, MoreHorizontal, Search } from "lucide-react";
 import {
@@ -27,17 +25,17 @@ import EyeIcon from "@heroicons/react/24/outline/EyeIcon";
 import { isToday } from "date-fns";
 
 export default function BloodDonationRequestsTable() {
-  const { data, loading, error, refresh } = useBloodDonationRequests();
+  const { data, refresh } = useBloodDonationRequests();
 
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
-  const [showHealthForm, setShowHealthForm] = useState(false);
+  const [showHealthForm] = useState(false);
 
   const [viewHealthForm, setViewHealthForm] = useState<any | null>(null);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  // const [ setProcessingId] = useState<string | null>(null);
   const [medicalDeclaration, setMedicalDeclaration] = useState<any | null>(null);
   const [dateFilter, setDateFilter] = useState("all");
 
@@ -46,53 +44,53 @@ export default function BloodDonationRequestsTable() {
   const [pageIndex, setPageIndex] = useState(0);
   const pageSize = 8;
 
-  const handleReject = async (id: string) => {
-    const rejectNote = prompt("Nhập lý do từ chối:");
-    if (!rejectNote?.trim()) {
-      setAlertMessage("Vui lòng nhập lý do từ chối để tiếp tục.");
-      return;
-    }
+  // const handleReject = async (id: string) => {
+  //   const rejectNote = prompt("Nhập lý do từ chối:");
+  //   if (!rejectNote?.trim()) {
+  //     setAlertMessage("Vui lòng nhập lý do từ chối để tiếp tục.");
+  //     return;
+  //   }
 
-    setProcessingId(id);
-    setAlertMessage(null);
+  //   setProcessingId(id);
+  //   setAlertMessage(null);
 
-    const isToday = (dateString: string) => {
-      const date = new Date(dateString);
-      const today = new Date();
-      return (
-        date.getFullYear() === today.getFullYear() &&
-        date.getMonth() === today.getMonth() &&
-        date.getDate() === today.getDate()
-      );
-    };
+  //   const isToday = (dateString: string) => {
+  //     const date = new Date(dateString);
+  //     const today = new Date();
+  //     return (
+  //       date.getFullYear() === today.getFullYear() &&
+  //       date.getMonth() === today.getMonth() &&
+  //       date.getDate() === today.getDate()
+  //     );
+  //   };
 
-    try {
-      await apiClient.put(
-        `/blood-donation-requests/status/${id}?status=2&rejectNote=${encodeURIComponent(rejectNote.trim())}`
-      );
-      refresh();
-    } catch (err: any) {
-      const { message, detail } = err.response?.data || {};
-      setAlertMessage(`${message || "Có lỗi xảy ra"}${detail ? `: ${detail}` : ""}`);
-    } finally {
-      setProcessingId(null);
-    }
-  };
+  //   try {
+  //     await apiClient.put(
+  //       `/blood-donation-requests/status/${id}?status=2&rejectNote=${encodeURIComponent(rejectNote.trim())}`
+  //     );
+  //     refresh();
+  //   } catch (err: any) {
+  //     const { message, detail } = err.response?.data || {};
+  //     setAlertMessage(`${message || "Có lỗi xảy ra"}${detail ? `: ${detail}` : ""}`);
+  //   } finally {
+  //     setProcessingId(null);
+  //   }
+  // };
 
-  const handleApprove = async (id: string) => {
-    setProcessingId(id);
-    setAlertMessage(null);
+  // const handleApprove = async (id: string) => {
+  //   setProcessingId(id);
+  //   setAlertMessage(null);
 
-    try {
-      await apiClient.put(`/blood-donation-requests/status/${id}?status=1`);
-      refresh();
-    } catch (err: any) {
-      const { message, detail } = err.response?.data || {};
-      setAlertMessage(`${message || "Có lỗi xảy ra"}${detail ? `: ${detail}` : ""}`);
-    } finally {
-      setProcessingId(null);
-    }
-  };
+  //   try {
+  //     await apiClient.put(`/blood-donation-requests/status/${id}?status=1`);
+  //     refresh();
+  //   } catch (err: any) {
+  //     const { message, detail } = err.response?.data || {};
+  //     setAlertMessage(`${message || "Có lỗi xảy ra"}${detail ? `: ${detail}` : ""}`);
+  //   } finally {
+  //     setProcessingId(null);
+  //   }
+  // };
 
   const filteredData = data.filter((item) => {
     const matchStatus = statusFilter === "all" || `${item.status}` === statusFilter;
@@ -134,10 +132,6 @@ export default function BloodDonationRequestsTable() {
         return <span>-</span>;
     }
   };
-
-  function fetchData() {
-    throw new Error("Function not implemented.");
-  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
