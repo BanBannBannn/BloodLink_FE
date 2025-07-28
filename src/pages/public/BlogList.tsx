@@ -58,7 +58,7 @@ const BlogList: React.FC = () => {
       scale: 1,
       transition: {
         duration: 0.4,
-        ease: "easeOut",
+        ease: "easeOut" as const,
       },
     },
     hover: {
@@ -66,7 +66,7 @@ const BlogList: React.FC = () => {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: "easeOut",
+        ease: "easeOut" as const,
       },
     },
   };
@@ -168,4 +168,4 @@ const BlogList: React.FC = () => {
   );
 };
 
-export default BlogList; 
+export default BlogList;
