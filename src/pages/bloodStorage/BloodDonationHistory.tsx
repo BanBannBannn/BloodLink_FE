@@ -15,7 +15,7 @@ import { Calendar, Droplet, Filter, MoreHorizontal, Search, TestTube, Droplets }
 import SupervisorDonationSummaryDashboard from "./donation-summary-dashboard";
 
 export default function BloodRawTable() {
-  const { data, loading, error, refresh } = useBloodHistory();
+  const { data, loading, refresh } = useBloodHistory();
   const [selectedDonation, setSelectedDonation] = useState<any | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");

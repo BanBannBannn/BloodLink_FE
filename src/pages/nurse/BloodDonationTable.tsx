@@ -32,7 +32,7 @@ export default function BloodDonationTable() {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const pageSize = 5;
 
-  const { data, loading, error, refresh } = useBloodDonation({});
+  const { data,  refresh } = useBloodDonation({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleUpdateStatus = async (id: string, status: number) => {

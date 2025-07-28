@@ -3,11 +3,10 @@ import useEmergencyRequests, { type EmergencyRequest } from "@/hooks/useEmergenc
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, MoreHorizontal } from "lucide-react";
+import { Eye } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
