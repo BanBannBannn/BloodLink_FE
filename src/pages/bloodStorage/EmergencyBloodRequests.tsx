@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+
 interface DisplayBag {
   id: string;
   code: string;
@@ -22,6 +23,7 @@ interface DisplayBag {
   bloodGroup: string;
   bloodComponent: string;
 }
+
 
 export default function EmergencyBloodRequestsPage() {
   const { data: requests, refresh } = useEmergencyRequests();
@@ -107,6 +109,7 @@ export default function EmergencyBloodRequestsPage() {
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">Yêu cầu xuất máu khẩn cấp</h1>
+
       <table className="w-full text-sm bg-white shadow rounded-lg overflow-hidden">
         <thead className="bg-gray-100">
           <tr>
@@ -241,6 +244,7 @@ export default function EmergencyBloodRequestsPage() {
                           {req.bloodIssues?.length ? "Cập nhật" : `Xuất ${selectedIds.length} túi`}
                         </Button>
                       </div>
+
                     )}
                   </td>
                 </tr>
@@ -256,6 +260,7 @@ export default function EmergencyBloodRequestsPage() {
             <AlertDialogTitle>Thông báo</AlertDialogTitle>
             <AlertDialogDescription>{msg}</AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setShowOk(false)}>
               OK
