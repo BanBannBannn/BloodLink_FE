@@ -93,3 +93,17 @@ export const getSupervisorDonationSummary = async (range = 0) => {
   const response = await apiClient.get(`/blood-donations/supvisor-summary?range=${range}`)
   return response
 }
+
+// Tổng quan yêu cầu xuất máu 2
+export interface ExportRequestStatsv2 {
+  total: number;
+  pending: number;
+  processing: number;
+  finished: number;
+  rejected: number;
+}
+
+export const getSupervisorExportSummary = async (range = 0) => {
+  const response = await apiClient.get(`/emergency-blood-requests/summary?range=${range}`)
+  return response
+}

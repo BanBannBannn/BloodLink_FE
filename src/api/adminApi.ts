@@ -37,6 +37,13 @@ export const deleteBlog = async (blogId: string) => {
   return await apiClient.delete(`/blogs/${blogId}`);
 };
 
-export const updateBlog = async (blogId: string, blogData: Partial<BlogPost>) => {
+export const updateBlog = async (
+  blogId: string,
+  blogData: Partial<BlogPost>
+) => {
   return await apiClient.put(`/blogs/${blogId}`, blogData);
+};
+
+export const getBlogById = async (id: string) => {
+  return await apiClient.get(`/blogs/${id}`);
 };

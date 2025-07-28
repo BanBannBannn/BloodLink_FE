@@ -1,3 +1,4 @@
+import { deleteBlog, getAllBlogs } from "@/api/adminApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -6,7 +7,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -16,15 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
   Table,
   TableBody,
   TableCell,
@@ -32,23 +23,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { EllipsisVertical, Plus, SquarePen, Trash2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
-import { z } from "zod";
-import { Button } from "../../components/ui/button";
-import {
-  addBlogs,
-  deleteBlog,
-  getAllBlogs,
-  uploadImage,
-  updateBlog,
-} from "@/api/adminApi";
 import { useToast } from "@/components/ui/toast";
 import { stripHtml } from "@/utils/validator";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { EllipsisVertical, SquarePen, Trash2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import "react-quill/dist/quill.snow.css";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { Button } from "../../components/ui/button";
 
 export interface BlogPost {
   id?: string;
@@ -78,62 +62,19 @@ type BlogFormData =
 
 const BlogManagement: React.FC = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false); // Không còn dùng dialog chỉnh sửa
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1); // Thêm state cho trang hiện tại
+  const blogsPerPage = 6; // Số phần tử mỗi trang
+  const navigate = useNavigate();
   const toast = useToast();
 
   const form = useForm<BlogFormData>({
     resolver: zodResolver(selectedBlog ? editBlogSchema : createBlogSchema),
     defaultValues: { title: "", summary: "", content: "", image: undefined },
   });
-
-  const onSubmit = async (data: BlogFormData) => {
-    setLoading(true);
-    try {
-      let uploadedImageUrl = selectedBlog?.imageUrl || "";
-      const updatePayload: Partial<BlogPost> = {
-        title: data.title,
-        summary: data.summary,
-        content: data.content,
-      };
-      if (selectedBlog) {
-        if (data.image) {
-          const responseUpLoadImage = await uploadImage(data.image);
-          uploadedImageUrl = responseUpLoadImage.data.fileUrl as string;
-          updatePayload.imageUrl = uploadedImageUrl;
-        }
-        await updateBlog(selectedBlog.id!, updatePayload);
-        setBlogs((prev) =>
-          prev.map((b) =>
-            b.id === selectedBlog.id ? { ...selectedBlog, ...updatePayload } : b
-          )
-        );
-        setSelectedBlog(null);
-      } else {
-        if (data.image) {
-          const responseUpLoadImage = await uploadImage(data.image);
-          uploadedImageUrl = responseUpLoadImage.data.fileUrl as string;
-        }
-        const response = await addBlogs({
-          title: data.title,
-          summary: data.summary,
-          content: data.content,
-          imageUrl: uploadedImageUrl,
-        });
-        const newBlog = response.data;
-        setBlogs((prev) => [newBlog, ...prev]);
-        toast.success("Tạo bài viết thành công");
-      }
-      setLoading(false);
-      setOpen(false);
-      form.reset();
-    } catch (error) {
-      setLoading(false);
-      console.log(error);
-    }
-  };
 
   const handleDeleteBlog = async () => {
     setLoading(true);
@@ -169,20 +110,24 @@ const BlogManagement: React.FC = () => {
     getListBlog();
   }, []);
 
+  // Tính toán các blog hiển thị trên trang hiện tại
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = blogs.slice(indexOfFirstBlog, indexOfLastBlog);
+  const totalPages = Math.ceil(blogs.length / blogsPerPage);
+
   useEffect(() => {
-    if (open) {
-      if (selectedBlog) {
-        form.reset({
-          title: selectedBlog.title,
-          summary: selectedBlog.summary,
-          content: selectedBlog.content,
-          image: undefined,
-        });
-      } else {
-        form.reset({ title: "", summary: "", content: "", image: undefined });
-      }
+    if (selectedBlog) {
+      form.reset({
+        title: selectedBlog.title,
+        summary: selectedBlog.summary,
+        content: selectedBlog.content,
+        image: undefined,
+      });
+    } else {
+      form.reset({ title: "", summary: "", content: "", image: undefined });
     }
-  }, [open, selectedBlog, form]);
+  }, [selectedBlog, form]);
 
   return (
     <div className="p-6 h-full flex-1 flex flex-col space-y-6">
@@ -190,125 +135,10 @@ const BlogManagement: React.FC = () => {
         <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
           Quản lí bài viết
         </h1>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => {
-                setSelectedBlog(null);
-                form.reset();
-              }}
-            >
-              <Plus className="h-4 w-4" />
-              Tạo bài viết mới
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {selectedBlog ? "Chỉnh sửa bài viết" : "Thêm bài viết mới"}
-              </DialogTitle>
-              <DialogDescription>
-                {selectedBlog
-                  ? "Chỉnh sửa thông tin bài viết bên dưới."
-                  : "Điền thông tin bài viết bên dưới."}
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tiêu đề</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nhập tiêu đề" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="summary"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tóm tắt</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nhập tóm tắt" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="image"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ảnh</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            field.onChange(file);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nội dung</FormLabel>
-                      <FormControl>
-                        <ReactQuill
-                          theme="snow"
-                          value={field.value}
-                          onChange={field.onChange}
-                          className="bg-white"
-                        />
-                      </FormControl>
-                      <FormMessage className="mt-10" />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter className="mt-15 flex">
-                  <Button
-                    className="cursor-pointer"
-                    type="button"
-                    onClick={() => setOpen(false)}
-                    disabled={loading}
-                  >
-                    Hủy
-                  </Button>
-                  <Button
-                    className="cursor-pointer"
-                    type="submit"
-                    disabled={loading}
-                  >
-                    {loading
-                      ? selectedBlog
-                        ? "Đang cập nhật"
-                        : "Đang tạo bài viết"
-                      : selectedBlog
-                      ? "Cập nhật bài viết"
-                      : "Tạo vài viết"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+
+        <Button onClick={() => navigate("/admin/blog-management/create")}>
+          Tạo bài viết
+        </Button>
       </div>
 
       <Card className="shadow-lg rounded-xl flex-1">
@@ -340,7 +170,7 @@ const BlogManagement: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {blogs.length === 0 ? (
+              {currentBlogs.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={5}
@@ -350,7 +180,7 @@ const BlogManagement: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                blogs.map((blog) => (
+                currentBlogs.map((blog) => (
                   <TableRow key={blog.id} className="hover:bg-slate-50">
                     <TableCell>
                       <img
@@ -364,9 +194,50 @@ const BlogManagement: React.FC = () => {
                         }}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{blog.title}</TableCell>
-                    <TableCell>{blog.summary}</TableCell>
-                    <TableCell>{stripHtml(blog.content)}</TableCell>
+                    <TableCell className="font-medium">
+                      <div
+                        title={blog.title}
+                        style={{
+                          maxWidth: 120,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: 'block',
+                        }}
+                      >
+                        {blog.title.length > 40 ? blog.title.slice(0, 40) + '...' : blog.title}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div
+                        title={blog.summary}
+                        style={{
+                          maxWidth: 160,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: 'block',
+                        }}
+                      >
+                        {blog.summary.length > 60 ? blog.summary.slice(0, 60) + '...' : blog.summary}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div
+                        title={stripHtml(blog.content)}
+                        style={{
+                          maxWidth: 180,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: 'block',
+                        }}
+                      >
+                        {stripHtml(blog.content).length > 80
+                          ? stripHtml(blog.content).slice(0, 80) + '...'
+                          : stripHtml(blog.content)}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger>
@@ -379,10 +250,9 @@ const BlogManagement: React.FC = () => {
                         <DropdownMenuContent>
                           <DropdownMenuItem
                             className="flex items-center gap-2"
-                            onClick={() => {
-                              setSelectedBlog(blog);
-                              setOpen(true);
-                            }}
+                            onClick={() =>
+                              navigate(`/admin/blog-management/edit/${blog.id}`)
+                            }
                           >
                             <span>Chỉnh sửa</span>
                             <DropdownMenuShortcut>
@@ -411,6 +281,40 @@ const BlogManagement: React.FC = () => {
             </TableBody>
           </Table>
         </CardContent>
+        {/* Phân trang */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-4 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="px-2"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            >
+              Trước
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <Button
+                key={i + 1}
+                variant={currentPage === i + 1 ? "default" : "outline"}
+                size="sm"
+                className="px-3"
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              className="px-2"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            >
+              Sau
+            </Button>
+          </div>
+        )}
       </Card>
       {/* Dialog xác nhận xóa */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -423,6 +327,7 @@ const BlogManagement: React.FC = () => {
           </DialogHeader>
           <DialogFooter>
             <Button
+              disabled={loading}
               variant="ghost"
               onClick={() => {
                 setSelectedBlog(null);

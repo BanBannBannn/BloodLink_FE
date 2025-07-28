@@ -16,10 +16,10 @@ import AccountManagement from "@/pages/admin/MemberManagement";
 
 import SupervisorLayout from "@/layouts/SupervisorLayout";
 import BloodRawTable from "@/pages/bloodStorage/BloodDonationHistory";
-import BloodComponentsTable from "@/pages/bloodStorage/BloodSotage";
-import EmergencyBloodRequests from "@/pages/bloodStorage/EmergencyBloodRequests";
 import BloodExportPage from "@/pages/bloodStorage/BloodExportPage";
+import BloodComponentsTable from "@/pages/bloodStorage/BloodSotage";
 import SupervisorDashboard from "@/pages/bloodStorage/Dashboard";
+import EmergencyBloodRequests from "@/pages/bloodStorage/EmergencyBloodRequests";
 
 import NurseLayout from "@/layouts/NurseLayout";
 import BloodDonationRequestsTable from "@/pages/nurse/BloodDonationRequestsTable";
@@ -28,12 +28,14 @@ import NurseDashboard from "@/pages/nurse/Dashboard";
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
+import BlogCreate from "@/pages/admin/BlogCreate";
 import NurseManagement from "@/pages/admin/NurseManagement";
 import SupervisorManagement from "@/pages/admin/SupervisorManagement";
-import { createBrowserRouter } from "react-router-dom";
-import EmergencyRequest from "@/pages/nurse/EmergencyRequest";
 import DonorManagementPage from "@/pages/nurse/DonatorManagement";
+import EmergencyRequest from "@/pages/nurse/EmergencyRequest";
 import Unauthorized from "@/pages/public/Unauthorized";
+import { createBrowserRouter } from "react-router-dom";
+import BlogEdit from "@/pages/admin/BlogEdit";
 
 export const router = createBrowserRouter([
   {
@@ -100,6 +102,8 @@ export const router = createBrowserRouter([
       { path: "nurse-management", element: <NurseManagement /> },
       { path: "supervisor-management", element: <SupervisorManagement /> },
       { path: "blog-management", element: <BlogManagement /> },
+      { path: "blog-management/create", element: <BlogCreate /> },
+      { path: "blog-management/edit/:id", element: <BlogEdit /> },
     ],
   },
 
@@ -116,7 +120,6 @@ export const router = createBrowserRouter([
       { path: "blood-sotage", element: <BloodComponentsTable /> },
       { path: "emergency-blood-requests", element: <EmergencyBloodRequests /> },
       { path: "export-blood-requests", element: <BloodExportPage /> },
- 
     ],
   },
 

@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+
 interface DisplayBag {
   id: string;
   code: string;
@@ -23,12 +24,14 @@ interface DisplayBag {
   bloodComponent: string;
 }
 
+
 export default function EmergencyBloodRequestsPage() {
   const { data: requests, refresh } = useEmergencyRequests();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [availableBloods, setAvailableBloods] = useState<DisplayBag[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
+
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
@@ -69,6 +72,7 @@ export default function EmergencyBloodRequestsPage() {
   const handleCreateOrUpdate = async (req: EmergencyRequest) => {
     setIsUpdating(true);
     try {
+
       if (req.bloodIssues && req.bloodIssues.length > 0) {
 
         await axiosInstance.put(`/blood-issues/${req.id}`, {
@@ -85,7 +89,9 @@ export default function EmergencyBloodRequestsPage() {
         setSuccessMessage(`Xuất ${selectedIds.length} túi thành công!`);
       }
 
+
       await refresh();
+
       setIsSuccessDialogOpen(true);
       setExpandedId(null);
 
@@ -100,10 +106,6 @@ export default function EmergencyBloodRequestsPage() {
     } finally {
       setIsUpdating(false);
     }
-  };
-
-
-
 
   const handleStatusChange = async (reqId: string, newStatus: number, label: string) => {
     setIsUpdating(true);
@@ -134,6 +136,7 @@ export default function EmergencyBloodRequestsPage() {
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">Yêu cầu xuất máu khẩn cấp</h1>
+
       <table className="w-full text-sm bg-white shadow rounded-lg overflow-hidden">
         <thead className="bg-gray-100">
           <tr>
@@ -295,6 +298,7 @@ export default function EmergencyBloodRequestsPage() {
                           {req.bloodIssues?.length ? "Cập nhật" : `Xuất ${selectedIds.length} túi`}
                         </Button>
                       </div>
+
                     )}
                   </td>
                 </tr>
@@ -316,6 +320,7 @@ export default function EmergencyBloodRequestsPage() {
               {errorMessage}
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
             <AlertDialogCancel
               onClick={() => setIsErrorDialogOpen(false)}
