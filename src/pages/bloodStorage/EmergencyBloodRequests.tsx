@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import useEmergencyRequests, { type EmergencyRequest } from "@/hooks/useEmergencyBloodRequests";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
@@ -26,89 +26,38 @@ interface DisplayBag {
 export default function EmergencyBloodRequestsPage() {
   const { data: requests, refresh } = useEmergencyRequests();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [availableBloods, setAvailableBloods] = useState<DisplayBag[]>([]);
+  const [available, setAvailable] = useState<DisplayBag[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [msg, setMsg] = useState<string>("");
+  const [showOk, setShowOk] = useState(false);
 
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
-
-  // Lấy các túi máu available
-  const fetchAvailable = async (reqId: string) => {
-    try {
-      const res = await axiosInstance.get(
-        `/blood-storage/available-bloods?emergencyBloodRequestId=${reqId}`
-      );
-      const records = res.data.records || [];
-      setAvailableBloods(
-        records.map((b: any) => ({
-          id: b.id,
-          code: b.code,
-          volume: b.volume,
-          bloodGroup: typeof b.bloodGroup === "string"
-            ? b.bloodGroup
-            : b.bloodGroup.displayName,
-          bloodComponent: b.bloodComponent.name,
-        }))
-      );
-    } catch {
-      setAvailableBloods([]);
-    }
+  const loadAvailable = async (reqId: string) => {
+    const res = await axiosInstance.get(
+      `/blood-storage/available-bloods?emergencyBloodRequestId=${reqId}`
+    );
+    setAvailable(
+      (res.data.records || []).map((b: any) => ({
+        id: b.id,
+        code: b.code,
+        volume: b.volume,
+        bloodGroup:
+          typeof b.bloodGroup === "string" ? b.bloodGroup : b.bloodGroup.displayName,
+        bloodComponent: b.bloodComponent.name,
+      }))
+    );
   };
 
-  // Mở chi tiết / xuất máu
-  const openDetails = (req: EmergencyRequest) => {
+  const openPanel = (req: EmergencyRequest) => {
     setExpandedId(req.id);
-    fetchAvailable(req.id);
-    const already = (req.bloodIssues || []).map((i: { bloodStorageId: any; }) => i.bloodStorageId);
-    setSelectedIds(already);
+    setSelectedIds((req.bloodIssues || []).map((i: { bloodStorageId: any; }) => i.bloodStorageId));
+    if (req.status < 3) loadAvailable(req.id);
   };
 
-  const handleCreateOrUpdate = async (req: EmergencyRequest) => {
+  const changeStatus = async (reqId: string, newStatus: number, label: string) => {
     setIsUpdating(true);
     try {
-      if (req.bloodIssues && req.bloodIssues.length > 0) {
-
-        await axiosInstance.put(`/blood-issues/${req.id}`, {
-          bloodStorageIds: selectedIds,
-        },
-        );
-        setSuccessMessage("Cập nhật túi máu thành công!");
-      } else {
-        await axiosInstance.post(
-          `/blood-issues`,
-          { bloodStorageIds: selectedIds },
-          { params: { EmergencyBloodRequestId: req.id } }
-        );
-        setSuccessMessage(`Xuất ${selectedIds.length} túi thành công!`);
-      }
-
-      await refresh();
-      setIsSuccessDialogOpen(true);
-      setExpandedId(null);
-
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        JSON.stringify(err.response?.data) ||
-        err.message ||
-        "Có lỗi xảy ra";
-      setErrorMessage(msg);
-      setIsErrorDialogOpen(true);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-
-
-
-  const handleStatusChange = async (reqId: string, newStatus: number, label: string) => {
-    setIsUpdating(true);
-    try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || "";
       await axiosInstance.put(
         `/emergency-blood-requests/${reqId}`,
         { status: newStatus },
@@ -118,18 +67,42 @@ export default function EmergencyBloodRequestsPage() {
           },
         }
       );
-
-      setSuccessMessage(`${label} thành công!`);
+      setMsg(`${label} thành công!`);
       await refresh();
-      setIsSuccessDialogOpen(true);
-    } catch (err: any) {
-      setIsErrorDialogOpen(true);
+    } catch (e: any) {
+      setMsg(e.response?.data?.message || e.message);
     } finally {
+      setShowOk(true);
       setIsUpdating(false);
       setExpandedId(null);
     }
   };
 
+
+  const upsertIssues = async (req: EmergencyRequest) => {
+    setIsUpdating(true);
+    try {
+      if (req.bloodIssues && req.bloodIssues.length) {
+        await axiosInstance.put(
+          `/blood-issues/${req.bloodIssues[0].id}`,
+          { bloodStorageIds: selectedIds }
+        );
+        setMsg("Cập nhật túi thành công!");
+      } else {
+        await axiosInstance.post(
+          `/blood-issues?EmergencyBloodRequestId=${req.id}`,
+          { bloodStorageIds: selectedIds }
+        );
+        setMsg(`Xuất ${selectedIds.length} túi thành công!`);
+      }
+      await refresh();
+    } catch (e: any) {
+      setMsg(e.response?.data?.message || e.message);
+    } finally {
+      setShowOk(true);
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -137,83 +110,71 @@ export default function EmergencyBloodRequestsPage() {
       <table className="w-full text-sm bg-white shadow rounded-lg overflow-hidden">
         <thead className="bg-gray-100">
           <tr>
-            <th className="px-4 py-2">Mã</th>
-            <th className="px-4 py-2">Địa chỉ</th>
-            <th className="px-4 py-2">Vol (ml)</th>
-            <th className="px-4 py-2">Nhóm</th>
-            <th className="px-4 py-2">Chế phẩm</th>
-            <th className="px-4 py-2">Trạng thái</th>
-            <th className="px-4 py-2">Hành động</th>
+            {["Mã", "Địa chỉ", "Vol (ml)", "Nhóm", "Chế phẩm", "Trạng thái", "Hành động"].map(h => (
+              <th key={h} className="px-4 py-2">{h}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {requests.map(req => (
             <React.Fragment key={req.id}>
               <tr className="border-t hover:bg-gray-50">
-                <td className="px-4 py-2">{req.code}</td>
-                <td className="px-4 py-2">{req.address}</td>
-                <td className="px-4 py-2">{req.volume}</td>
-                <td className="px-4 py-2">{req.bloodGroup.displayName}</td>
-                <td className="px-4 py-2">{req.bloodComponent.name}</td>
-                <td className="px-4 py-2">
-                  {{
-                    0: "Chờ xác nhận",
-                    1: "Từ chối",
-                    2: "Đang xử lý",
-                    3: "Hoàn tất",
-                    4: "Hủy",
-                  }[req.status]}
+                <td className="px-6 py-4 font-medium text-gray-900">{req.code}</td>
+                <td className="text-center px-4 py-4">{req.address}</td>
+                <td className="text-center px-4 py-4">{req.volume}</td>
+                <td className="text-center px-4 py-4">{req.bloodGroup.displayName}</td>
+                <td className="text-center px-4 py-4">{req.bloodComponent.name}</td>
+                <td className="text-center px-4 py-4">
+                  {["Chờ xác nhận", "Từ chối", "Đang xử lý", "Hoàn tất", "Hủy"][req.status]}
                 </td>
                 <td className="px-4 py-2 text-right space-x-2">
-                  {req.status === 2 && (
+                  {req.status === 0 && (
                     <>
-                      {(!req.bloodIssues || req.bloodIssues.length === 0) && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openDetails(req)}
-                        >
-                          Xuất máu
-                        </Button>
-                      )}
-
-                      {req.bloodIssues && req.bloodIssues.length > 0 && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openDetails(req)}
-                          >
-                            Chi tiết
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              handleStatusChange(req.id, 3, "Hoàn tất")
-                            }
-                            disabled={isUpdating}
-                          >
-                            Hoàn tất
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() =>
-                              handleStatusChange(req.id, 4, "Hủy")
-                            }
-                            disabled={isUpdating}
-                          >
-                            Hủy
-                          </Button>
-                        </>
-                      )}
+                      <Button
+                        size="sm" variant="outline"
+                        disabled={isUpdating}
+                        onClick={() => changeStatus(req.id, 2, "Duyệt")}
+                      >
+                        Duyệt
+                      </Button>
+                      <Button
+                        size="sm" variant="destructive"
+                        disabled={isUpdating}
+                        onClick={() => changeStatus(req.id, 4, "Hủy xác nhận")}
+                      >
+                        Hủy
+                      </Button>
                     </>
                   )}
-                  {req.status === 3 && (
+                  {req.status === 2 && !req.bloodIssues?.length && (
                     <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openDetails(req)}
+                      size="sm" variant="outline"
+                      onClick={() => openPanel(req)}
+                    >
+                      Xuất máu
+                    </Button>
+                  )}
+                  {req.status === 2 && req.bloodIssues?.length > 0 && (
+                    <>
+                      <Button
+                        size="sm" variant="outline"
+                        onClick={() => openPanel(req)}
+                      >
+                        Chi tiết
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={isUpdating}
+                        onClick={() => changeStatus(req.id, 3, "Hoàn tất")}
+                      >
+                        Hoàn tất
+                      </Button>
+                    </>
+                  )}
+                  {(req.status === 3 || req.status === 4) && (
+                    <Button
+                      size="sm" variant="outline"
+                      onClick={() => openPanel(req)}
                     >
                       <Eye className="w-4 h-4 mr-1" /> Xem
                     </Button>
@@ -221,20 +182,16 @@ export default function EmergencyBloodRequestsPage() {
                 </td>
               </tr>
 
-              {/* phần chi tiết xuất máu */}
               {expandedId === req.id && (
                 <tr className="bg-gray-50">
                   <td colSpan={7} className="px-6 py-4">
                     <h3 className="font-semibold mb-2">
-                      Chọn túi máu
-                      {req.status === 3 ? "Túi máu đã xuất" : "Chọn túi máu"}
+                      {req.status === 3 || req.status === 4
+                        ? "Túi máu đã xuất"
+                        : "Chọn túi máu để xuất"}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {(() => {
-                        // Luôn chỉ lấy bloodIssues khi status===3
                         const chosen: DisplayBag[] = (req.bloodIssues || []).map((i: { bloodStorageId: any; bloodStorage: { code: any; bloodGroup: { displayName: any; }; bloodComponent: { name: any; }; }; volume: any; }) => ({
                           id: i.bloodStorageId,
                           code: i.bloodStorage.code,
@@ -245,30 +202,19 @@ export default function EmergencyBloodRequestsPage() {
                               : i.bloodStorage.bloodGroup.displayName,
                           bloodComponent: i.bloodStorage.bloodComponent.name,
                         }));
-
-                        if (req.status === 3) {
-                          // chỉ show chosen
-                          return chosen;
-                        }
-
-                        // status !== 3 mới merge thêm availableBloods
-                        const rest: DisplayBag[] = availableBloods
-                          .filter(b => !chosen.find(c => c.id === b.id))
-                          .map(b => ({
-                            id: b.id,
-                            code: b.code,
-                            volume: b.volume,
-                            bloodGroup: b.bloodGroup,
-                            bloodComponent: b.bloodComponent,
-                          }));
+                        if (req.status > 2) return chosen;
+                        const rest = available.filter(b => !chosen.find(c => c.id === b.id));
                         return [...chosen, ...rest];
                       })().map(bag => (
-                        <label key={bag.id} className="border rounded-lg p-4 flex items-start space-x-4">
+                        <label
+                          key={bag.id}
+                          className="border rounded-lg p-4 flex items-start space-x-4"
+                        >
                           <Checkbox
                             checked={selectedIds.includes(bag.id)}
-                            disabled={req.status === 3}
+                            disabled={req.status > 2}
                             onCheckedChange={() => {
-                              if (req.status !== 3) {
+                              if (req.status === 2) {
                                 setSelectedIds(prev =>
                                   prev.includes(bag.id)
                                     ? prev.filter(x => x !== bag.id)
@@ -286,11 +232,11 @@ export default function EmergencyBloodRequestsPage() {
                         </label>
                       ))}
                     </div>
-                    {req.status !== 3 && (
+                    {req.status === 2 && (
                       <div className="mt-4 text-right">
                         <Button
-                          onClick={() => handleCreateOrUpdate(req)}
-                          disabled={isUpdating || selectedIds.length === 0}
+                          onClick={() => upsertIssues(req)}
+                          disabled={isUpdating || !selectedIds.length}
                         >
                           {req.bloodIssues?.length ? "Cập nhật" : `Xuất ${selectedIds.length} túi`}
                         </Button>
@@ -304,49 +250,19 @@ export default function EmergencyBloodRequestsPage() {
         </tbody>
       </table>
 
-      {/* Dialog lỗi */}
-      <AlertDialog
-        open={isErrorDialogOpen}
-        onOpenChange={setIsErrorDialogOpen}
-      >
+      <AlertDialog open={showOk} onOpenChange={() => setShowOk(false)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Có lỗi!</AlertDialogTitle>
-            <AlertDialogDescription>
-              {errorMessage}
-            </AlertDialogDescription>
+            <AlertDialogTitle>Thông báo</AlertDialogTitle>
+            <AlertDialogDescription>{msg}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => setIsErrorDialogOpen(false)}
-            >
-              Đóng
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => setIsErrorDialogOpen(false)}
-            >
-              Ok
+            <AlertDialogAction onClick={() => setShowOk(false)}>
+              OK
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Dialog thành công */}
-      <AlertDialog
-        open={isSuccessDialogOpen}
-        onOpenChange={setIsSuccessDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cập nhật công</AlertDialogTitle>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsSuccessDialogOpen(false)}>
-              Đóng
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div >
+    </div>
   );
 }
