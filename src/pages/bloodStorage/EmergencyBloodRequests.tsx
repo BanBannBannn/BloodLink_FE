@@ -1,86 +1,87 @@
 import React, { useEffect, useState } from "react";
-import useEmergencyRequests, {
-  type EmergencyRequest,
-} from "@/hooks/useEmergencyBloodRequests";
+import useEmergencyRequests, { type EmergencyRequest } from "@/hooks/useEmergencyBloodRequests";
 import axiosInstance from "@/lib/axios";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MoreHorizontal } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { MoreHorizontal } from "lucide-react";
-import { statusMapEmergencyRequest } from "@/constants/constants";
+
+interface DisplayBag {
+  id: string;
+  code: string;
+  volume: number;
+  bloodGroup: string;
+  bloodComponent: string;
+}
 
 export default function EmergencyBloodRequestsPage() {
-  const { data: requests, refresh, actionLoading } = useEmergencyRequests();
+  const { data: requests, refresh } = useEmergencyRequests();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [selectedRequest, setSelectedRequest] =
-    useState<EmergencyRequest | null>(null);
   const [availableBloods, setAvailableBloods] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [currentIssueId, setCurrentIssueId] = useState<string | null>(null);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-
-  const navigate = useNavigate();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
 
   const fetchAvailable = async (reqId: string) => {
-    const res = await axiosInstance.get(
-      `/api/blood-storage/available-bloods?emergencyBloodRequestId=${reqId}`
-    );
-
-    setAvailableBloods(Array.isArray(res.data) ? res.data : []);
+    try {
+      const res = await axiosInstance.get(
+        `/blood-storage/available-bloods?emergencyBloodRequestId=${reqId}`
+      );
+      setAvailableBloods(res.data.records || []);
+    } catch {
+      setAvailableBloods([]);
+    }
   };
 
-  const handleApprove = async (req: EmergencyRequest) => {
-    await axiosInstance.put(`/api/emergency-blood-requests/${req.id}`, {
-      ...req,
-      status: 2,
-    });
-    await refresh();
-    navigate(`/blood-export/${req.id}`);
+  const openDetails = (req: EmergencyRequest) => {
+    setExpandedId(req.id);
+    fetchAvailable(req.id);
+    const already = req.bloodIssues?.map((i: { bloodStorageId: any; }) => i.bloodStorageId) || [];
+    setSelectedIds(already);
   };
 
-  const handleReject = async (req: EmergencyRequest) => {
-    await axiosInstance.put(`/api/emergency-blood-requests/${req.id}`, {
-      ...req,
-      status: 1,
-    });
-    await refresh();
-  };
+  const handleCreateOrUpdate = async (req: EmergencyRequest) => {
+    setIsUpdating(true);
+    try {
+      if (req.bloodIssues && req.bloodIssues.length > 0) {
+        await axiosInstance.put(`/blood-issues/${req.id}`, {
+          bloodStorageIds: selectedIds,
+        },
+        );
+      } else {
+        await axiosInstance.post(
+          `/api/blood-issues?EmergencyBloodRequestId=${req.id}`,
+          { bloodStorageIds: selectedIds },
+        );
 
-  const handleCreateIssue = async () => {
-    if (!selectedRequest) return;
-    const res = await axiosInstance.post(
-      `/api/blood-issues?emergencyBloodRequestId=${selectedRequest.id}`,
-      { bloodStorageIds: selectedIds }
-    );
-    setCurrentIssueId(res.data.id);
-    await refresh();
-    alert("Tạo phiếu xuất máu thành công!");
-  };
-  const handleUpdateIssue = async () => {
-    if (!currentIssueId) return;
-    await axiosInstance.put(`/api/blood-issues/${currentIssueId}`, {
-      bloodStorageIds: selectedIds,
-    });
-    await refresh();
-    alert("Cập nhật túi máu thành công!");
+      }
+      await refresh();
+      setExpandedId(null);
+    } catch (err: any) {
+      setErrorMessage(err.response?.data ?? err.message);
+      setIsErrorDialogOpen(true);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Yêu cầu xuất máu khẩn cấp</h1>
-      <table className="w-full table-auto text-sm bg-white shadow rounded-lg overflow-hidden">
+      <h1 className="text-xl font-bold mb-4">Yêu cầu xuất máu khẩn cấp</h1>
+      <table className="w-full text-sm bg-white shadow rounded-lg overflow-hidden">
         <thead className="bg-gray-100">
           <tr>
-            <th className="px-4 py-2">Mã</th>
+            <th className="px-4 py-2">Mã yêu cầu</th>
             <th className="px-4 py-2">Địa chỉ</th>
             <th className="px-4 py-2">Vol (ml)</th>
             <th className="px-4 py-2">Nhóm</th>
@@ -90,191 +91,109 @@ export default function EmergencyBloodRequestsPage() {
           </tr>
         </thead>
         <tbody>
-          {requests.map((r) => (
-            <React.Fragment key={r.id}>
+          {requests.map(req => (
+            <React.Fragment key={req.id}>
               <tr className="border-t hover:bg-gray-50">
-                <td className="px-4 py-2">{r.code}</td>
-                <td className="px-4 py-2">{r.address}</td>
-                <td className="px-4 py-2">{r.volume}</td>
-                <td className="px-4 py-2">{r.bloodGroup.displayName}</td>
-                <td className="px-4 py-2">{r.bloodComponent.name}</td>
+                <td className="px-4 py-2">{req.code}</td>
+                <td className="px-4 py-2">{req.address}</td>
+                <td className="px-4 py-2">{req.volume}</td>
+                <td className="px-4 py-2">{req.bloodGroup.displayName}</td>
+                <td className="px-4 py-2">{req.bloodComponent.name}</td>
                 <td className="px-4 py-2">
-                  {statusMapEmergencyRequest[r.status]}
+                  {{
+                    0: "Chờ xác nhận",
+                    1: "Từ chối",
+                    2: "Đang xử lý",
+                    3: "Hoàn tất",
+                    4: "Hủy",
+                  }[req.status]}
                 </td>
-                <td className="px-4 py-2 text-right space-x-2">
-                  {r.status === 0 && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleReject(r)}
-                      >
-                        Từ chối
-                      </Button>
-                      <Button size="sm" onClick={() => handleApprove(r)}>
-                        Xuất máu
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setExpandedId(r.id);
-                          setSelectedRequest(r);
-                        }}
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                        Chi tiết
-                      </Button>
-                    </>
-                  )}
-                  {r.status === 2 && (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setExpandedId(r.id);
-                          setSelectedRequest(r);
-                          setCurrentIssueId(
-                            r.bloodIssues?.[0]?.id || null
-                          );
-                          setSelectedIds(
-                            r.bloodIssues
-                              ? r.bloodIssues.map((i: any) => i.bloodStorageId)
-                              : []
-                          );
-                          fetchAvailable(r.id);
-                        }}
-                      >
-                        Xuất máu
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setExpandedId(r.id);
-                          setSelectedRequest(r);
-                          setCurrentIssueId(
-                            r.bloodIssues?.[0]?.id || null
-                          );
-                          setSelectedIds(
-                            r.bloodIssues
-                              ? r.bloodIssues.map((i: any) => i.bloodStorageId)
-                              : []
-                          );
-                          fetchAvailable(r.id);
-                        }}
-                      >
-                        Chi tiết
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          axiosInstance
-                            .put(`/api/emergency-blood-requests/${r.id}`, {
-                              ...r,
-                              status: 3,
-                            })
-                            .then(refresh)
-                        }
-                      >
-                        Hoàn tất
-                      </Button>
-                    </>
-                  )}
-                  {(r.status === 1 || r.status === 3) && (
+                <td className="px-4 py-2 text-right">
+                  {(req.status === 0 || req.status === 2) && (
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => {
-                        setExpandedId(r.id);
-                        setSelectedRequest(r);
-                        setCurrentIssueId(r.bloodIssues?.[0]?.id || null);
-                      }}
+                      onClick={() => openDetails(req)}
                     >
+                      <MoreHorizontal className="w-4 h-4 mr-1" />
                       Chi tiết
                     </Button>
                   )}
                 </td>
               </tr>
 
-              {expandedId === r.id && (
+              {expandedId === req.id && (
                 <tr className="bg-gray-50">
-                  <td colSpan={7} className="px-4 py-4">
-                    {r.status === 2 && (
-                      <>
-                        <h3 className="font-semibold mb-2">
-                          Chọn túi máu để xuất
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                          {availableBloods.map((b) => (
-                            <label
-                              key={b.id}
-                              className="flex items-center border p-2 rounded"
-                            >
-                              <Checkbox
-                                checked={selectedIds.includes(b.id)}
-                                onCheckedChange={() =>
-                                  setSelectedIds((prev) =>
-                                    prev.includes(b.id)
-                                      ? prev.filter((i) => i !== b.id)
-                                      : [...prev, b.id]
-                                  )
-                                }
-                              />
-                              <div className="ml-2 text-sm">
-                                <p>
-                                  <strong>{b.code}</strong> – {b.volume}ml
-                                </p>
-                                <p>
-                                  {b.bloodGroup.displayName} /{" "}
-                                  {b.bloodComponent.name}
-                                </p>
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                        <div className="text-right space-x-2">
-                          {!currentIssueId ? (
-                            <Button
-                              disabled={selectedIds.length === 0}
-                              onClick={handleCreateIssue}
-                            >
-                              Xuất {selectedIds.length} túi
-                            </Button>
-                          ) : (
-                            <Button
-                              disabled={selectedIds.length === 0}
-                              onClick={handleUpdateIssue}
-                            >
-                              Cập nhật xuất máu
-                            </Button>
-                          )}
-                        </div>
-                      </>
-                    )}
-                    {(r.status === 1 || r.status === 3) && (
-                      <>
-                        <h3 className="font-semibold mb-2">
-                          Lịch sử xuất máu
-                        </h3>
-                        <ul className="list-disc list-inside text-sm">
-                          {r.bloodIssues?.length ? (
-                            r.bloodIssues.map((i: any) => (
-                              <li key={i.id}>
-                                Issue #{i.id} —{" "}
-                                {new Date(i.issuedDate).toLocaleString()} —{" "}
-                                {i.details
-                                  .map((d: any) => d.bloodStorageCode)
-                                  .join(", ")}
-                              </li>
-                            ))
-                          ) : (
-                            <li>Chưa có bản ghi</li>
-                          )}
-                        </ul>
-                      </>
-                    )}
+                  <td colSpan={7} className="px-6 py-4">
+                    <h3 className="font-semibold mb-2">Chọn túi máu</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {(() => {
+                        // merge chosen + available
+                        const chosen: DisplayBag[] = (req.bloodIssues || []).map((i: { bloodStorageId: any; bloodStorage: { code: any; bloodGroup: { displayName: any; }; bloodComponent: { name: any; }; }; volume: any; }) => ({
+                          id: i.bloodStorageId,
+                          code: i.bloodStorage.code,
+                          volume: i.volume,
+                          bloodGroup:
+                            typeof i.bloodStorage.bloodGroup === "string"
+                              ? i.bloodStorage.bloodGroup
+                              : i.bloodStorage.bloodGroup.displayName,
+                          bloodComponent: i.bloodStorage.bloodComponent.name,
+                        }));
+                        const rest: DisplayBag[] = availableBloods
+                          .filter(b => !chosen.find(c => c.id === b.id))
+                          .map(b => ({
+                            id: b.id,
+                            code: b.code,
+                            volume: b.volume,
+                            bloodGroup:
+                              typeof b.bloodGroup === "string"
+                                ? b.bloodGroup
+                                : b.bloodGroup.displayName,
+                            bloodComponent: b.bloodComponent.name,
+                          }));
+                        return [...chosen, ...rest];
+                      })().map(bag => (
+                        <label
+                          key={bag.id}
+                          className="border rounded-lg p-4 flex items-start space-x-4"
+                        >
+                          <Checkbox
+                            checked={selectedIds.includes(bag.id)}
+                            onCheckedChange={() =>
+                              setSelectedIds(prev =>
+                                prev.includes(bag.id)
+                                  ? prev.filter(x => x !== bag.id)
+                                  : [...prev, bag.id]
+                              )
+                            }
+                          />
+                          <div>
+                            <p>
+                              <strong>Mã yêu cầu:</strong> {bag.code}
+                            </p>
+                            <p>
+                              <strong>Nhóm:</strong> {bag.bloodGroup}
+                            </p>
+                            <p>
+                              <strong>Thể tích:</strong> {bag.volume} ml
+                            </p>
+                            <p>
+                              <strong>Loại:</strong> {bag.bloodComponent}
+                            </p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="mt-4 text-right">
+                      <Button
+                        onClick={() => handleCreateOrUpdate(req)}
+                        disabled={isUpdating || selectedIds.length === 0}
+                      >
+                        {req.bloodIssues && req.bloodIssues.length > 0
+                          ? "Cập nhật"
+                          : `Xuất ${selectedIds.length} túi`}
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -282,6 +201,32 @@ export default function EmergencyBloodRequestsPage() {
           ))}
         </tbody>
       </table>
+
+      <AlertDialog
+        open={isErrorDialogOpen}
+        onOpenChange={setIsErrorDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Có lỗi!</AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => setIsErrorDialogOpen(false)}
+            >
+              Đóng
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => setIsErrorDialogOpen(false)}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

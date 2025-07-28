@@ -72,7 +72,7 @@ export default function BloodCheckFormModal({
                         ["description"].includes(k) ? v : Number(v),
                     ])
                 ),
-                bloodGroupId: selectedGroup, // giữ nguyên kiểu string
+                bloodGroupId: selectedGroup, 
                 bloodDonationId: donation.id,
             };
 
@@ -93,7 +93,7 @@ export default function BloodCheckFormModal({
                 <h2 className="text-xl font-semibold mb-4">Phiếu kiểm tra máu</h2>
 
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="mb-3 col-span-2">
+                    <div className="mb-3">
                         <label className="block mb-1">Nhóm máu</label>
                         <select
                             value={selectedGroup}
@@ -122,7 +122,7 @@ export default function BloodCheckFormModal({
                     ))}
                 </div>
 
-                <div className="mb-3 mt-3 col-span-2">
+                <div className="mb-3">
                     <label className="block">Ghi chú</label>
                     <textarea
                         value={form.description}
