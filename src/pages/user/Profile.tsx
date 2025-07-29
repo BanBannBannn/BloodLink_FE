@@ -36,8 +36,8 @@ import { useToast } from "@/components/ui/toast";
 const profileSchema = z.object({
   fullName: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
   email: z.string().email("Email không hợp lệ"),
-  phone: z.string().regex(/^[0-9]{10}$/, "Số điện thoại không hợp lệ"),
-  address: z.string().min(5, "Địa chỉ phải có ít nhất 5 ký tự"),
+  phoneNo: z.string().regex(/^[0-9]{10}$/, "Số điện thoại không hợp lệ"),
+  addresss: z.string().min(5, "Địa chỉ phải có ít nhất 5 ký tự"),
   dateOfBirth: z.string(),
   gender: z.string().min(1, "Vui lòng chọn giới tính"),
   identityId: z.string().min(9, "CMND/CCCD phải có ít nhất 9 ký tự"),
@@ -65,8 +65,8 @@ function ProfilePage() {
     defaultValues: {
       fullName: user?.fullName,
       email: user?.email,
-      phone: user?.phoneNo,
-      address: user?.addresss,
+      phoneNo: user?.phoneNo,
+      addresss: user?.addresss,
       dateOfBirth: user?.dateOfBirth,
       gender: user?.gender !== undefined ? String(user?.gender) : "",
       identityId: user?.identityId,
@@ -276,8 +276,8 @@ function ProfilePage() {
       form.reset({
         fullName: user?.fullName,
         email: user?.email,
-        phone: user?.phoneNo,
-        address: user?.addresss,
+        phoneNo: user?.phoneNo,
+        addresss: user?.addresss,
         dateOfBirth: user?.dateOfBirth,
         gender: user?.gender !== undefined ? String(user?.gender) : "",
         identityId: user?.identityId,
@@ -328,8 +328,8 @@ function ProfilePage() {
         form.reset({
           fullName: response.data?.fullName,
           email: response.data?.email,
-          phone: response.data?.phoneNo,
-          address: response.data?.addresss,
+          phoneNo: response.data?.phoneNo,
+          addresss: response.data?.addresss,
           dateOfBirth: response.data?.dateOfBirth,
           gender:
             response.data?.gender !== undefined
@@ -395,14 +395,14 @@ function ProfilePage() {
                 <InfoRow
                   icon={Phone}
                   label="Số điện thoại"
-                  value={form.getValues("phone")}
-                  name="phone"
+                  value={form.getValues("phoneNo")}
+                  name="phoneNo"
                 />
                 <InfoRow
                   icon={MapPin}
                   label="Địa chỉ"
-                  value={form.getValues("address")}
-                  name="address"
+                  value={form.getValues("addresss")}
+                  name="addresss"
                 />
                 <InfoRow
                   icon={Calendar}

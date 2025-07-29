@@ -1,6 +1,18 @@
-import { getAllAccount } from "@/api/adminApi";
+import {
+  banUserById,
+  getAllAccount,
+  unbanUserById
+} from "@/api/adminApi";
+import AddUserForm from "@/components/AddUserForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,21 +32,12 @@ import {
 import {
   EllipsisVertical,
   LockKeyhole,
+  LockKeyholeOpen,
   Search,
-  SquarePen,
-  Trash2,
   UserPlus,
-  X,
+  X
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import AddUserForm from "@/components/AddUserForm";
 
 export interface User {
   addresss: string;
@@ -74,6 +77,20 @@ export default function SupervisorManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [open, setOpen] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+
+  const handleChangeStatus = async (userId: string, status: string) => {
+    try {
+      if (status === "Active") {
+        await banUserById(userId);
+      } else {
+        await unbanUserById(userId);
+      }
+      setRefresh((prev) => !prev);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleAddNurseSuccess = (newUser: User) => {
     setUsers((prev) => [...prev, newUser]);
@@ -105,7 +122,7 @@ export default function SupervisorManagement() {
       }
     };
     getAllUser();
-  }, []);
+  }, [refresh]);
 
   useEffect(() => {
     const filtered = users.filter((user) =>
@@ -119,7 +136,7 @@ export default function SupervisorManagement() {
   return (
     <div className="p-6 h-full flex flex-col flex-1 space-y-6">
       <div className="flex items-center justify-between">
-      <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
+        <h1 className="text-4xl font-extrabold text-gray-800 mb-2 drop-shadow-sm">
           Quản lí giám sát
         </h1>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -214,24 +231,31 @@ export default function SupervisorManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem className="flex items-center gap-2">
-                            <span>Khóa</span>
-                            <DropdownMenuShortcut>
-                              <LockKeyhole className="h-4 w-4" />
-                            </DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="flex items-center gap-2">
-                            <span>Chỉnh sửa</span>
-                            <DropdownMenuShortcut>
-                              <SquarePen className="h-4 w-4" />
-                            </DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="flex items-center gap-2">
-                            <span>Xóa</span>
-                            <DropdownMenuShortcut>
-                              <Trash2 className="h-4 w-4" />
-                            </DropdownMenuShortcut>
-                          </DropdownMenuItem>
+                          {user.status === "Active" ? (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleChangeStatus(user.id, user.status)
+                              }
+                              className="flex items-center gap-2"
+                            >
+                              <span>Khóa</span>
+                              <DropdownMenuShortcut>
+                                <LockKeyhole className="h-4 w-4" />
+                              </DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleChangeStatus(user.id, user.status)
+                              }
+                              className="flex items-center gap-2"
+                            >
+                              <span>Mở Khóa</span>
+                              <DropdownMenuShortcut>
+                                <LockKeyholeOpen className="h-4 w-4" />
+                              </DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

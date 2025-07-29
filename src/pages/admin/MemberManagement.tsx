@@ -1,4 +1,4 @@
-import { getAllAccount } from "@/api/adminApi";
+import { banUserById, getAllAccount, unbanUserById } from "@/api/adminApi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -20,9 +20,8 @@ import {
 import {
   EllipsisVertical,
   LockKeyhole,
+  LockKeyholeOpen,
   Search,
-  SquarePen,
-  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -62,7 +61,21 @@ const ROLE_MEMBER_ID = import.meta.env.VITE_ROLE_MEMBER;
 export default function AccountManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [refresh, setRefresh] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+
+  const handleChangeStatus = async (userId: string, status: string) => {
+    try {
+      if (status === "Active") {
+        await banUserById(userId);
+      } else {
+        await unbanUserById(userId);
+      }
+      setRefresh((prev) => !prev);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     const getAllUser = async () => {
@@ -78,7 +91,7 @@ export default function AccountManagement() {
       }
     };
     getAllUser();
-  }, []);
+  }, [refresh]);
 
   useEffect(() => {
     const filtered = users.filter((user) =>
@@ -118,12 +131,14 @@ export default function AccountManagement() {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="font-semibold">Full Name</TableHead>
+                <TableHead className="font-semibold">Họ và tên</TableHead>
                 <TableHead className="font-semibold">Email</TableHead>
-                <TableHead className="font-semibold">Phone</TableHead>
-                <TableHead className="font-semibold">ID Card</TableHead>
-                <TableHead className="font-semibold">Address</TableHead>
-                <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Số điện thoại</TableHead>
+                <TableHead className="font-semibold">
+                  Căn cước công dân
+                </TableHead>
+                <TableHead className="font-semibold">Địa chỉ</TableHead>
+                <TableHead className="font-semibold">Trạng thái</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -165,24 +180,31 @@ export default function AccountManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem className="flex items-center gap-2">
-                            <span>Khóa</span>
-                            <DropdownMenuShortcut>
-                              <LockKeyhole className="h-4 w-4" />
-                            </DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="flex items-center gap-2">
-                            <span>Chỉnh sửa</span>
-                            <DropdownMenuShortcut>
-                              <SquarePen className="h-4 w-4" />
-                            </DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="flex items-center gap-2">
-                            <span>Xóa</span>
-                            <DropdownMenuShortcut>
-                              <Trash2 className="h-4 w-4" />
-                            </DropdownMenuShortcut>
-                          </DropdownMenuItem>
+                          {user.status === "Active" ? (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleChangeStatus(user.id, user.status)
+                              }
+                              className="flex items-center gap-2"
+                            >
+                              <span>Khóa</span>
+                              <DropdownMenuShortcut>
+                                <LockKeyhole className="h-4 w-4" />
+                              </DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleChangeStatus(user.id, user.status)
+                              }
+                              className="flex items-center gap-2"
+                            >
+                              <span>Mở Khóa</span>
+                              <DropdownMenuShortcut>
+                                <LockKeyholeOpen className="h-4 w-4" />
+                              </DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
