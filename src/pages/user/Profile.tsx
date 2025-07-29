@@ -103,11 +103,6 @@ function ProfilePage() {
       if (!userId) throw new Error("Không tìm thấy userId");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await updateUserInfo(userId, updatedData as any);
-      // Lấy lại thông tin user mới nhất và cập nhật vào context
-      const response = await getUserInfo(userId);
-      if (response.data) {
-        setUser(response.data);
-      }
       toast.success("Cập nhật thông tin thành công!");
       setIsEditing(false);
       setLoading(false);
@@ -329,6 +324,7 @@ function ProfilePage() {
       try {
         const userId = user?.id;
         const response = await getUserInfo(userId!);
+        setUser(response.data);
         form.reset({
           fullName: response.data?.fullName,
           email: response.data?.email,
@@ -348,7 +344,7 @@ function ProfilePage() {
       }
     };
     getUserInformation();
-  }, [form, loading, user?.id]);
+  }, [form, loading, user?.id, setUser]);
 
   return (
     <div className="h-full bg-gray-50 py-8 px-4 md:px-8 flex items-center">
