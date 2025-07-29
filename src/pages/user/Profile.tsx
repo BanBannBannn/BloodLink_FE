@@ -50,7 +50,7 @@ export type ProfileFormData = z.infer<typeof profileSchema>;
 function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   // State để lưu file ảnh tạm thời
   const [frontImage, setFrontImage] = useState<File | null>(null);
   const [backImage, setBackImage] = useState<File | null>(null);
@@ -103,6 +103,11 @@ function ProfilePage() {
       if (!userId) throw new Error("Không tìm thấy userId");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await updateUserInfo(userId, updatedData as any);
+      // Lấy lại thông tin user mới nhất và cập nhật vào context
+      const response = await getUserInfo(userId);
+      if (response.data) {
+        setUser(response.data);
+      }
       toast.success("Cập nhật thông tin thành công!");
       setIsEditing(false);
       setLoading(false);
