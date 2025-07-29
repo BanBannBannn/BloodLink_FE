@@ -9,8 +9,7 @@ export const validateUserInfor = (user: User) => {
     user.identityId &&
     user.dateOfBirth &&
     user.frontUrlIdentity &&
-    user.backUrlIdentity &&
-    user.gender !== undefined
+    user.backUrlIdentity
   ) {
     return true;
   }

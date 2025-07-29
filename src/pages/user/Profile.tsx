@@ -329,7 +329,6 @@ function ProfilePage() {
       try {
         const userId = user?.id;
         const response = await getUserInfo(userId!);
-        console.log(response.data);
         form.reset({
           fullName: response.data?.fullName,
           email: response.data?.email,
