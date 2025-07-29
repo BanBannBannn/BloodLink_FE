@@ -101,6 +101,7 @@ export default function BloodDonationTable() {
                   <SelectItem value="0">Đang hiến máu</SelectItem>
                   <SelectItem value="1">Đã hiến máu</SelectItem>
                   <SelectItem value="2">Hủy</SelectItem>
+                   <SelectItem value="3">Đã kiểm tra</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -159,14 +160,19 @@ export default function BloodDonationTable() {
                         ? "text-yellow-600"
                         : item.status === 1
                           ? "text-green-600"
-                          : "text-red-600"
+                          : item.status === 2
+                            ? "text-red-600"
+                            : "text-purple-600"
                         }`}
                     >
                       {item.status === 0
                         ? "Đang hiến máu"
                         : item.status === 1
                           ? "Đã hiến máu"
-                          : "Hủy"}
+                          : item.status === 2
+                            ? "Hủy"
+                            : "Đã kiểm tra"
+                          }
                     </td>
                     <td className="text-center px-4 py-4 flex justify-center gap-2">
                       {item.status === 0 && (
