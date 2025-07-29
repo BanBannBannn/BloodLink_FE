@@ -55,7 +55,7 @@ export default function AdminLayout() {
               }`}
             >
               <UsersIcon className="w-5 h-5" />
-              Quản lý tài khoản
+              Quản lý người dùng
             </Link>
             <Link
               to="/admin/nurse-management"

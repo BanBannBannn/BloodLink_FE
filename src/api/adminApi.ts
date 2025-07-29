@@ -47,3 +47,10 @@ export const updateBlog = async (
 export const getBlogById = async (id: string) => {
   return await apiClient.get(`/blogs/${id}`);
 };
+
+export const banUserById = async (id: string) => {
+  return await apiClient.put(`/user/${id}/ban`);
+};
+export const unbanUserById = async (id: string) => {
+  return await apiClient.put(`/user/${id}/unban`);
+};
